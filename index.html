@@ -387,7 +387,7 @@ table.tbl tr:hover td{background:var(--bg3)}
     <button class="btn btn-primary" onclick="openAddRadarForm()">+ Añadir empresa</button>
   </div>
   <div class="filter-row">
-    <button class="pill active" onclick="filterRadar('all',this)">Todas (50)</button>
+    <button class="pill active" onclick="filterRadar('all',this)">Todas (49)</button>
     <button class="pill" onclick="filterRadar('A',this)">Tier A</button>
     <button class="pill" onclick="filterRadar('B',this)">Tier B</button>
     <button class="pill" onclick="filterRadar('C',this)">Tier C</button>
@@ -929,6 +929,9 @@ function renderDashboard() {
   document.getElementById('prog-bar').style.width = prog + '%';
   document.getElementById('prog-actual').textContent = fe(divMo) + '/mes';
   document.getElementById('dash-date').textContent = new Date().toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
+  // Render oportunidades activas
+  renderOportunidades();
+
   // Show FX reminder if no date set or older than 7 days
   const fxReminder = document.getElementById('fx-reminder');
   if (fxReminder) {
@@ -1235,77 +1238,58 @@ function calcProj() {
 // RADAR
 // ════════════════════════════════════════════
 const RADAR = [
-  {tier:'A',ticker:'O',name:'Realty Income',sector:'REIT',country:'🇺🇸',yield:'5.0%',freq:'Mensual',note:'133 subidas consecutivas. Dividendo mensual. 15.500 inmuebles.',streak:31},
-  {tier:'A',ticker:'ENB',name:'Enbridge',sector:'Midstream',country:'🇨🇦',yield:'5.1%',freq:'Trimestral',note:'31 años subida div. 30% petróleo crudo EEUU pasa por sus tuberías.',streak:31},
-  {tier:'A',ticker:'KO',name:'Coca-Cola',sector:'Consumer Staples',country:'🇺🇸',yield:'2.7%',freq:'Trimestral',note:'63 años subida div. Wide moat. Beta 0.33.',streak:63},
-  {tier:'A',ticker:'MDT',name:'Medtronic',sector:'Healthcare',country:'🇮🇪',yield:'3.4%',freq:'Trimestral',note:'47 años subida. Mayor fabricante puro de dispositivos médicos.',streak:47},
-  {tier:'A',ticker:'JNJ',name:'Johnson & Johnson',sector:'Healthcare',country:'🇺🇸',yield:'3.2%',freq:'Trimestral',note:'62 años subida. Wide moat. Revenue +9.1% en 2025.',streak:62},
-  {tier:'A',ticker:'PG',name:'Procter & Gamble',sector:'Consumer Staples',country:'🇺🇸',yield:'2.6%',freq:'Trimestral',note:'68 años subida. El Dividend King más longevo.',streak:68},
-  {tier:'A',ticker:'ABBV',name:'AbbVie',sector:'Pharma',country:'🇺🇸',yield:'3.7%',freq:'Trimestral',note:'Pipeline post-Humira sólido. Crecimiento dividendo fuerte.',streak:12},
-  {tier:'A',ticker:'NEE',name:'NextEra Energy',sector:'Utilities',country:'🇺🇸',yield:'3.2%',freq:'Trimestral',note:'Líder renovables + regulada. Dividend Aristocrat.',streak:29},
-  {tier:'A',ticker:'CVX',name:'Chevron',sector:'Energía',country:'🇺🇸',yield:'4.8%',freq:'Trimestral',note:'37 años Div Aristocrat. FCF enorme.',streak:37},
-  {tier:'A',ticker:'NNN',name:'NNN REIT',sector:'REIT',country:'🇺🇸',yield:'5.5%',freq:'Mensual',note:'35 años subida. Triple-net leases.',streak:35},
-  {tier:'B',ticker:'ITW',name:'Illinois Tool Works',sector:'Industrial',country:'🇺🇸',yield:'2.3%',freq:'Trimestral',note:'53 años subida. ROE >90%.',streak:53},
-  {tier:'B',ticker:'UL',name:'Unilever',sector:'Consumer Staples',country:'🇬🇧',yield:'3.6%',freq:'Trimestral',note:'Reestructuración. Marcas globales.',streak:30},
-  {tier:'B',ticker:'MDLZ',name:'Mondelez',sector:'Consumer Staples',country:'🇺🇸',yield:'2.8%',freq:'Trimestral',note:'Wide moat. Oreo, Cadbury. Div +8%/año esperado.',streak:12},
-  {tier:'B',ticker:'PM',name:'Philip Morris',sector:'Tabaco/IQOS',country:'🇨🇭',yield:'4.4%',freq:'Trimestral',note:'IQOS crecimiento fuerte. Yield alta y creciente.',streak:16},
-  {tier:'B',ticker:'ROG',name:'Roche',sector:'Pharma',country:'🇨🇭',yield:'3.5%',freq:'Anual',note:'35+ años div. Diagnóstico + biotech.',streak:35},
-  {tier:'B',ticker:'GPC',name:'Genuine Parts',sector:'Industrial',country:'🇺🇸',yield:'3.7%',freq:'Trimestral',note:'71 años Dividend King. Split-up catalyst.',streak:71},
-  {tier:'B',ticker:'SO',name:'Southern Company',sector:'Utilities',country:'🇺🇸',yield:'3.8%',freq:'Trimestral',note:'75+ años dividendo.',streak:75},
-  {tier:'C',ticker:'BTI',name:'British Am. Tobacco',sector:'Tabaco',country:'🇬🇧',yield:'9.4%',freq:'Trimestral',note:'Yield muy alta. Vigilar trampa. ESG riesgo.',streak:20},
-  {tier:'C',ticker:'REE',name:'Red Eléctrica',sector:'Utilities ES',country:'🇪🇸',yield:'5.2%',freq:'Semestral',note:'Infraestructura eléctrica española.',streak:20},
-  {tier:'C',ticker:'VZ',name:'Verizon',sector:'Telecoms',country:'🇺🇸',yield:'6.8%',freq:'Trimestral',note:'Morningstar 4★. Oligopolio en maduración.',streak:18},
-  {tier:'B',ticker:'NESN',name:'Nestlé',sector:'Consumer Staples',country:'🇨🇭',yield:'3.8%',freq:'Anual',note:'Reestructuración activa. Agua, café (Nespresso), nutrición infantil. Bolsa SWX.',streak:25},
-  {tier:'C',ticker:'K',name:'Kellanova (Mars)',sector:'Consumer Staples',country:'🇺🇸',yield:'3.1%',freq:'Trimestral',note:'Kelloggs + Pringles + Pop-Tarts. Adquirida por Mars en 2024. Revisar estructura.',streak:20},
-  {tier:'A',ticker:'V',name:'Visa',sector:'Financiero',country:'🇺🇸',yield:'0.8%',freq:'Trimestral',note:'16 años subida dividendo. Yield mínima pero crece 15-20%/año. Wide moat absoluto.',streak:16},
-  {tier:'A',ticker:'BNS',name:'Bank of Nova Scotia',sector:'Banca',country:'🇨🇦',yield:'6.2%',freq:'Trimestral',note:'Big 6 canadiense. 45+ años dividendo. Alta yield. Exposición América Latina.',streak:45},
-  {tier:'B',ticker:'MMM',name:'3M',sector:'Industrial',country:'🇺🇸',yield:'2.1%',freq:'Trimestral',note:'65 años Dividend King. Post-reestructuración (escisión Solventum). Vigilar litigios.',streak:65},
-  {tier:'C',ticker:'BUD',name:'AB InBev',sector:'Bebidas/Spirits',country:'🇧🇪',yield:'1.5%',freq:'Semestral',note:'Reconstruye dividendo post-deuda. Budweiser, Corona, Stella. Deuda alta todavía.',streak:3},
-  // ── Consumer Staples (additional) ──
-  {tier:'A',ticker:'GIS',name:'General Mills',sector:'Consumer Staples',country:'🇺🇸',yield:'3.9%',freq:'Trimestral',note:'25+ años dividendo. Cereales, Haagen-Dazs, Pillsbury. Demanda inelástica.',streak:25},
-  {tier:'A',ticker:'CL',name:'Colgate-Palmolive',sector:'Consumer Staples',country:'🇺🇸',yield:'2.3%',freq:'Trimestral',note:'61 años Dividend King. 41% cuota global pasta dental. Pricing power real.',streak:61},
-  {tier:'A',ticker:'KMB',name:'Kimberly-Clark',sector:'Consumer Staples',country:'🇺🇸',yield:'3.5%',freq:'Trimestral',note:'54 años Dividend King. Huggies, Kleenex. Revisando estrategia.',streak:54},
-  {tier:'B',ticker:'PEP',name:'PepsiCo',sector:'Consumer Staples',country:'🇺🇸',yield:'3.5%',freq:'Trimestral',note:'52 años Dividend King. Snacks + bebidas. Frito-Lay aporta la mitad del beneficio.',streak:52},
-
-  // ── Healthcare (additional) ──
-  
-  {tier:'B',ticker:'BMY',name:'Bristol-Myers Squibb',sector:'Healthcare',country:'🇺🇸',yield:'4.5%',freq:'Trimestral',note:'Alta yield. Oncología y cardiología. Revisión pipeline post-patentes.',streak:15},
-  {tier:'B',ticker:'NOVOb',name:'Novo Nordisk',sector:'Healthcare',country:'🇩🇰',yield:'2.1%',freq:'Semestral',note:'Ozempic y Wegovy. Crecimiento extraordinario. Dividendo crece rápido.',streak:20},
-  
-
-  // ── Industrials (additional) ──
-  
-  {tier:'A',ticker:'EMR',name:'Emerson Electric',sector:'Industrial',country:'🇺🇸',yield:'1.9%',freq:'Trimestral',note:'67 años Dividend King. Automatización industrial. Moat en software industrial.',streak:67},
-  
-
-  // ── Technology ──
-  {tier:'B',ticker:'TXN',name:'Texas Instruments',sector:'Tecnología',country:'🇺🇸',yield:'3.2%',freq:'Trimestral',note:'21 años subida. Semiconductores analógicos — moat estructural alto.',streak:21},
-  {tier:'B',ticker:'MSFT',name:'Microsoft',sector:'Tecnología',country:'🇺🇸',yield:'0.8%',freq:'Trimestral',note:'22 años subida. Yield baja pero crece 10%+/año. Azure + IA tailwind.',streak:22},
-  {tier:'C',ticker:'AAPL',name:'Apple',sector:'Tecnología',country:'🇺🇸',yield:'0.5%',freq:'Trimestral',note:'12 años dividendo. Yield mínima — el valor es la recompra masiva + ecosistema.',streak:12},
-
-  // ── Financials / REITs ──
-  {tier:'A',ticker:'TD',name:'TD Bank',sector:'Banca',country:'🇨🇦',yield:'5.0%',freq:'Trimestral',note:'Big 6 canadiense. Post-multa regulatoria EEUU. Reconstruyendo confianza.',streak:25},
-  {tier:'B',ticker:'AXP',name:'American Express',sector:'Financiero',country:'🇺🇸',yield:'1.2%',freq:'Trimestral',note:'12+ años subida. Crecimiento dividendo fuerte. Premium consumer moat.',streak:12},
-  {tier:'B',ticker:'WPC',name:'W.P. Carey',sector:'REIT',country:'🇺🇸',yield:'6.2%',freq:'Trimestral',note:'REIT net-lease diversificado. Revisó política dividendo en 2023. Vigilar.',streak:10},
-  {tier:'B',ticker:'FAST',name:'Fastenal',sector:'Industrial',country:'🇺🇸',yield:'2.2%',freq:'Trimestral',note:'25+ años subida. Distribución industrial. Crecimiento dividendo consistente.',streak:25},
-
-  // ── Energy & Materials ──
-  {tier:'A',ticker:'XOM',name:'ExxonMobil',sector:'Energía',country:'🇺🇸',yield:'3.6%',freq:'Trimestral',note:'41 años Dividend Aristocrat. FCF muy alto. Pioneer acquisition añade escala.',streak:41},
-  {tier:'B',ticker:'SHEL',name:'Shell',sector:'Energía',country:'🇬🇧',yield:'4.1%',freq:'Trimestral',note:'Reconstruye track record post-2020. ADR NYSE. LNG + renovables.',streak:4},
-  {tier:'B',ticker:'LIN',name:'Linde',sector:'Materiales',country:'🇮🇪',yield:'1.4%',freq:'Trimestral',note:'30+ años dividendo. Gases industriales. Moat en infraestructura criogénica.',streak:30},
-  {tier:'C',ticker:'NTR',name:'Nutrien',sector:'Materiales',country:'🇨🇦',yield:'4.1%',freq:'Trimestral',note:'12+ años dividendo. Fertilizantes. Ciclo commodities — entrada táctica.',streak:12},
-
-  // ── Utilities (additional) ──
-  {tier:'A',ticker:'WEC',name:'WEC Energy',sector:'Utilities',country:'🇺🇸',yield:'3.5%',freq:'Trimestral',note:'22 años subida. Utility Midwest regulada. Crecimiento tarifa limpio.',streak:22},
-  {tier:'A',ticker:'AWR',name:'American States Water',sector:'Utilities',country:'🇺🇸',yield:'2.1%',freq:'Trimestral',note:'69 años Dividend King. La empresa cotizada con más años consecutivos de subida.',streak:69},
-  {tier:'B',ticker:'D',name:'Duke Energy',sector:'Utilities',country:'🇺🇸',yield:'3.6%',freq:'Trimestral',note:'Morningstar FV $131. Solo ligero descuento. Utility sudeste EEUU.',streak:18},
-  {tier:'C',ticker:'ENEL',name:'Enel',sector:'Utilities',country:'🇮🇹',yield:'6.1%',freq:'Semestral',note:'Gigante europeo renovables. Dividendo variable histórico — revisar política.',streak:15},
-
-  // ── Beverages / Consumer Discretionary ──
-  {tier:'B',ticker:'RI',name:'Pernod Ricard',sector:'Bebidas/Spirits',country:'🇫🇷',yield:'4.5%',freq:'Semestral',note:'Peer Diageo. Mumm, Jameson, Absolut. Revisar balance post-caída sector spirits.',streak:15},
-  {tier:'B',ticker:'HEI',name:'Heineken',sector:'Bebidas/Spirits',country:'🇳🇱',yield:'2.3%',freq:'Semestral',note:'Cerveza premium global. Crecimiento Asia + África. Dividendo moderado pero estable.',streak:15},
-  
-  
+  // TIER A
+  {tier:'A',ticker:'O',name:'Realty Income',sector:'REIT',country:'🇺🇸',yield:'5.0%',freq:'Mensual',streak:31,targetPrice:60,currency:'$',metrics:{pe:'15x AFFO',fcfPayout:'75%',debtEbitda:'5.4x',divGrowth5y:'3%',verdict:'COMPRAR'},note:'133 subidas consecutivas de dividendo mensual. AFFO/acc crece 2-3% anual. Ocupación 98.9%. A $60 cotiza a 14x AFFO — precio histórico atractivo.'},
+  {tier:'A',ticker:'ENB',name:'Enbridge',sector:'Midstream',country:'🇨🇦',yield:'5.1%',freq:'Trimestral',streak:31,targetPrice:50,currency:'$',metrics:{pe:'21x',fcfPayout:'65%',debtEbitda:'4.8x',divGrowth5y:'3%',verdict:'COMPRAR'},note:'30% del crudo de EEUU pasa por sus tuberías. 98% ingresos bajo contrato. Deuda alta pero característica del sector regulado. Por debajo de $50 es zona de entrada.'},
+  {tier:'A',ticker:'KO',name:'Coca-Cola',sector:'Consumer Staples',country:'🇺🇸',yield:'2.7%',freq:'Trimestral',streak:63,targetPrice:68,currency:'$',metrics:{pe:'23x',fcfPayout:'67%',debtEbitda:'2.8x',divGrowth5y:'5%',verdict:'ACUMULAR'},note:'63 años Dividend King. FCF $12B guiado 2026. Beta 0.33. Zona ideal $65-68. Por encima de $75 cotiza con prima excesiva.'},
+  {tier:'A',ticker:'JNJ',name:'Johnson & Johnson',sector:'Healthcare',country:'🇺🇸',yield:'3.2%',freq:'Trimestral',streak:62,targetPrice:155,currency:'$',metrics:{pe:'15x',fcfPayout:'50%',debtEbitda:'0.8x',divGrowth5y:'6%',verdict:'COMPRAR'},note:'Dividend King 62 años. Balance casi libre de deuda neta. Payout 50% sobre FCF — margen enorme para seguir subiendo. Pipeline pharma sólido post-Kenvue.'},
+  {tier:'A',ticker:'PG',name:'Procter & Gamble',sector:'Consumer Staples',country:'🇺🇸',yield:'2.6%',freq:'Trimestral',streak:68,targetPrice:155,currency:'$',metrics:{pe:'24x',fcfPayout:'63%',debtEbitda:'1.8x',divGrowth5y:'5%',verdict:'ACUMULAR'},note:'68 años — el Dividend King más longevo. Marcas en 180 países. Acumular en correcciones hacia $150-155. Por encima de $175 sobrevalorado.'},
+  {tier:'A',ticker:'MDT',name:'Medtronic',sector:'Healthcare',country:'🇮🇪',yield:'3.4%',freq:'Trimestral',streak:47,targetPrice:92,currency:'$',metrics:{pe:'16x',fcfPayout:'62%',debtEbitda:'1.5x',divGrowth5y:'3%',verdict:'COMPRAR'},note:'Mayor fabricante puro dispositivos médicos. Morningstar FV $112. Descuento ~18%. Dividendo muy seguro. Precio actual ya atractivo.'},
+  {tier:'A',ticker:'ABBV',name:'AbbVie',sector:'Healthcare',country:'🇺🇸',yield:'3.7%',freq:'Trimestral',streak:12,targetPrice:175,currency:'$',metrics:{pe:'14x',fcfPayout:'55%',debtEbitda:'2.1x',divGrowth5y:'8%',verdict:'COMPRAR'},note:'Pipeline post-Humira sorprendentemente sólido. Skyrizi y Rinvoq +40% anual. FCF payout 55% con div growth 8% — combinación excepcional para DGI.'},
+  {tier:'A',ticker:'NEE',name:'NextEra Energy',sector:'Utilities',country:'🇺🇸',yield:'3.2%',freq:'Trimestral',streak:29,targetPrice:72,currency:'$',metrics:{pe:'20x',fcfPayout:'65%',debtEbitda:'6.2x',divGrowth5y:'10%',verdict:'ACUMULAR'},note:'Líder mundial en renovables + utility regulada. 10% crecimiento dividendo sostenido. Deuda alta (utility) pero ingresos regulados. Zona de entrada $68-72.'},
+  {tier:'A',ticker:'CVX',name:'Chevron',sector:'Energía',country:'🇺🇸',yield:'4.8%',freq:'Trimestral',streak:37,targetPrice:145,currency:'$',metrics:{pe:'12x',fcfPayout:'50%',debtEbitda:'0.5x',divGrowth5y:'6%',verdict:'COMPRAR'},note:'Balance más sólido del sector. Deuda neta casi cero. FCF enorme incluso con petróleo bajo. Hess acquisition añade escala. A $145 muy atractivo.'},
+  {tier:'A',ticker:'NNN',name:'NNN REIT',sector:'REIT',country:'🇺🇸',yield:'5.5%',freq:'Mensual',streak:35,targetPrice:42,currency:'$',metrics:{pe:'14x AFFO',fcfPayout:'67%',debtEbitda:'5.2x',divGrowth5y:'3%',verdict:'COMPRAR'},note:'Triple-net leases — inquilinos pagan impuestos, seguros y mantenimiento. 35 años subida. 3.500+ propiedades. Paga mensual como O pero menos conocido.'},
+  {tier:'A',ticker:'V',name:'Visa',sector:'Financiero',country:'🇺🇸',yield:'0.8%',freq:'Trimestral',streak:16,targetPrice:280,currency:'$',metrics:{pe:'26x',fcfPayout:'22%',debtEbitda:'-0.3x',divGrowth5y:'18%',verdict:'ACUMULAR'},note:'Yield mínima hoy pero dividendo crece 18% anual. En 10 años el yield sobre coste supera 4%. Duopolio de pagos con moat casi imposible de replicar. Comprar en correcciones.'},
+  {tier:'A',ticker:'BNS',name:'Bank of Nova Scotia',sector:'Banca',country:'🇨🇦',yield:'6.2%',freq:'Trimestral',streak:45,targetPrice:58,currency:'$',metrics:{pe:'10x',fcfPayout:'58%',debtEbitda:'N/A',divGrowth5y:'3%',verdict:'COMPRAR'},note:'Big 6 canadiense. Sistema bancario más regulado del mundo. Yield 6.2% con payout conservador. Exposición América Latina es riesgo a vigilar.'},
+  {tier:'A',ticker:'AWR',name:'American States Water',sector:'Utilities',country:'🇺🇸',yield:'2.1%',freq:'Trimestral',streak:69,targetPrice:72,currency:'$',metrics:{pe:'28x',fcfPayout:'55%',debtEbitda:'4.2x',divGrowth5y:'7%',verdict:'ACUMULAR'},note:'69 años — la empresa cotizada con más años consecutivos de subida del mundo. Agua: el activo más defensivo. Prima de valoración justificada por la certeza absoluta.'},
+  // TIER B
+  {tier:'B',ticker:'ITW',name:'Illinois Tool Works',sector:'Industrial',country:'🇺🇸',yield:'2.3%',freq:'Trimestral',streak:53,targetPrice:235,currency:'$',metrics:{pe:'22x',fcfPayout:'60%',debtEbitda:'2.1x',divGrowth5y:'7%',verdict:'VIGILAR'},note:'ROE >90% — extraordinario. 53 años subida. Modelo 80/20. Buena empresa, esperar precio correcto por debajo de $235.'},
+  {tier:'B',ticker:'UL',name:'Unilever',sector:'Consumer Staples',country:'🇬🇧',yield:'3.6%',freq:'Trimestral',streak:30,targetPrice:48,currency:'£',metrics:{pe:'16x',fcfPayout:'65%',debtEbitda:'2.2x',divGrowth5y:'2%',verdict:'VIGILAR'},note:'Reestructuración bajo Hein Schumacher. Dove, Hellmanns, Magnum. Crecimiento div modesto pero yield atractiva. Vigilar ejecución.'},
+  {tier:'B',ticker:'MDLZ',name:'Mondelez',sector:'Consumer Staples',country:'🇺🇸',yield:'2.8%',freq:'Trimestral',streak:12,targetPrice:62,currency:'$',metrics:{pe:'18x',fcfPayout:'55%',debtEbitda:'3.1x',divGrowth5y:'10%',verdict:'ACUMULAR'},note:'Oreo, Cadbury, Toblerone — wide moat. Morningstar FV $73. Div crece 10% anual. A $60-62 hay margen de seguridad interesante.'},
+  {tier:'B',ticker:'NOVOb',name:'Novo Nordisk',sector:'Healthcare',country:'🇩🇰',yield:'2.1%',freq:'Semestral',streak:20,targetPrice:65,currency:'€',metrics:{pe:'20x',fcfPayout:'40%',debtEbitda:'-1x',divGrowth5y:'15%',verdict:'VIGILAR'},note:'Ozempic y Wegovy dominan mercado GLP-1. Caja neta. Div crece 15% anual. Tras caída desde máximos, valoración más razonable. Ticker DK: NOVO B.'},
+  {tier:'B',ticker:'ROG',name:'Roche',sector:'Healthcare',country:'🇨🇭',yield:'3.5%',freq:'Anual',streak:35,targetPrice:240,currency:'CHF',metrics:{pe:'14x',fcfPayout:'52%',debtEbitda:'0.6x',divGrowth5y:'1%',verdict:'ACUMULAR'},note:'Diagnóstico + biotech. Morningstar: infravalorada. Balance sólido. Div modesto pero muy seguro. Ticker SWX: ROG. Paga anualmente.'},
+  {tier:'B',ticker:'GPC',name:'Genuine Parts',sector:'Industrial',country:'🇺🇸',yield:'3.7%',freq:'Trimestral',streak:71,targetPrice:118,currency:'$',metrics:{pe:'15x',fcfPayout:'55%',debtEbitda:'1.8x',divGrowth5y:'5%',verdict:'ACUMULAR'},note:'71 años Dividend King. NAPA autopartes + distribución industrial. Split-up puede desbloquear valor. A $115-118 cotiza barato vs historia.'},
+  {tier:'B',ticker:'SO',name:'Southern Company',sector:'Utilities',country:'🇺🇸',yield:'3.8%',freq:'Trimestral',streak:75,targetPrice:82,currency:'$',metrics:{pe:'18x',fcfPayout:'70%',debtEbitda:'6.8x',divGrowth5y:'3%',verdict:'VIGILAR'},note:'75+ años dividendo. Utility regulada sudeste EEUU. Vogtle nuclear completada. Dividendo muy seguro aunque crecimiento modesto.'},
+  {tier:'B',ticker:'D',name:'Duke Energy',sector:'Utilities',country:'🇺🇸',yield:'3.6%',freq:'Trimestral',streak:18,targetPrice:112,currency:'$',metrics:{pe:'18x',fcfPayout:'68%',debtEbitda:'7.1x',divGrowth5y:'4%',verdict:'VIGILAR'},note:'Morningstar FV $131. Utility Carolinas + Medio Oeste. 4% crecimiento div guiado. Esperar corrección a $108-112.'},
+  {tier:'B',ticker:'XOM',name:'ExxonMobil',sector:'Energía',country:'🇺🇸',yield:'3.6%',freq:'Trimestral',streak:41,targetPrice:105,currency:'$',metrics:{pe:'13x',fcfPayout:'45%',debtEbitda:'0.7x',divGrowth5y:'3%',verdict:'ACUMULAR'},note:'41 años Div Aristocrat. FCF enorme. Pioneer acquisition añade escala en Perm Basin. Balance sólido. Bajo payout sobre FCF.'},
+  {tier:'B',ticker:'SHEL',name:'Shell',sector:'Energía',country:'🇬🇧',yield:'4.1%',freq:'Trimestral',streak:4,targetPrice:35,currency:'$',metrics:{pe:'8x',fcfPayout:'40%',debtEbitda:'0.9x',divGrowth5y:'15%',verdict:'VIGILAR'},note:'Reconstruye track record post-recorte 2020. LNG + trading energía. Múltiplo muy bajo. Streak corto es el único freno para DGI puro.'},
+  {tier:'B',ticker:'LIN',name:'Linde',sector:'Materiales',country:'🇮🇪',yield:'1.4%',freq:'Trimestral',streak:30,targetPrice:415,currency:'$',metrics:{pe:'28x',fcfPayout:'40%',debtEbitda:'1.2x',divGrowth5y:'8%',verdict:'ACUMULAR'},note:'Gasoductos criogénicos imposibles de replicar. Contratos take-or-pay 15-20 años. Premium justificado por calidad del negocio.'},
+  {tier:'B',ticker:'TXN',name:'Texas Instruments',sector:'Tecnología',country:'🇺🇸',yield:'3.2%',freq:'Trimestral',streak:21,targetPrice:175,currency:'$',metrics:{pe:'25x',fcfPayout:'75%',debtEbitda:'1.5x',divGrowth5y:'8%',verdict:'ACUMULAR'},note:'Semis analógicos — 80.000+ productos. Fábricas propias crean moat. FCF payout algo alto en ciclo bajo pero negocio excelente a largo plazo.'},
+  {tier:'B',ticker:'MSFT',name:'Microsoft',sector:'Tecnología',country:'🇺🇸',yield:'0.8%',freq:'Trimestral',streak:22,targetPrice:380,currency:'$',metrics:{pe:'30x',fcfPayout:'25%',debtEbitda:'-1x',divGrowth5y:'10%',verdict:'ACUMULAR'},note:'Yield ínfima hoy. Dividendo crece 10%+ con FCF payout 25%. Azure + Copilot. En 15 años el yield sobre coste supera 4%. Comprar en caídas.'},
+  {tier:'B',ticker:'PEP',name:'PepsiCo',sector:'Consumer Staples',country:'🇺🇸',yield:'3.5%',freq:'Trimestral',streak:52,targetPrice:148,currency:'$',metrics:{pe:'20x',fcfPayout:'70%',debtEbitda:'3.3x',divGrowth5y:'7%',verdict:'ACUMULAR'},note:'52 años Dividend King. Frito-Lay aporta 50%+ del beneficio. Div crece 7% anual. Tras caída, zona de acumulación interesante.'},
+  {tier:'B',ticker:'KMB',name:'Kimberly-Clark',sector:'Consumer Staples',country:'🇺🇸',yield:'3.5%',freq:'Trimestral',streak:54,targetPrice:130,currency:'$',metrics:{pe:'19x',fcfPayout:'65%',debtEbitda:'2.9x',divGrowth5y:'4%',verdict:'VIGILAR'},note:'54 años Dividend King. Huggies, Kleenex. Dividend seguro, crecimiento modesto. Zona entrada $125-130.'},
+  {tier:'B',ticker:'MMM',name:'3M',sector:'Industrial',country:'🇺🇸',yield:'2.1%',freq:'Trimestral',streak:65,targetPrice:128,currency:'$',metrics:{pe:'14x',fcfPayout:'45%',debtEbitda:'2.0x',divGrowth5y:'1%',verdict:'VIGILAR'},note:'65 años Dividend King pero crecimiento casi plano. Escisión Solventum completada. Litigios earplugs resueltos. Vigilar si retoma crecimiento div.'},
+  {tier:'B',ticker:'NESN',name:'Nestle',sector:'Consumer Staples',country:'🇨🇭',yield:'3.8%',freq:'Anual',streak:25,targetPrice:82,currency:'CHF',metrics:{pe:'18x',fcfPayout:'68%',debtEbitda:'2.5x',divGrowth5y:'4%',verdict:'VIGILAR'},note:'Reestructuración bajo Laurent Freixe. Nespresso, KitKat, Purina. Yield alta para estandar suizo. Vigilar ejecucion antes de entrar. Ticker SWX: NESN.'},
+  {tier:'B',ticker:'AXP',name:'American Express',sector:'Financiero',country:'🇺🇸',yield:'1.2%',freq:'Trimestral',streak:12,targetPrice:260,currency:'$',metrics:{pe:'17x',fcfPayout:'20%',debtEbitda:'N/A',divGrowth5y:'12%',verdict:'ACUMULAR'},note:'Moat en cliente premium. Div crece 12% anual con payout muy bajo. No tipica DGI por yield, pero crecimiento compensa. Comprar en correcciones.'},
+  {tier:'B',ticker:'WPC',name:'W.P. Carey',sector:'REIT',country:'🇺🇸',yield:'6.2%',freq:'Trimestral',streak:10,targetPrice:58,currency:'$',metrics:{pe:'12x AFFO',fcfPayout:'75%',debtEbitda:'5.8x',divGrowth5y:'-1%',verdict:'VIGILAR'},note:'REIT net-lease diversificado. Reviso dividendo 2023. Ahora mas limpio. Yield alta pero streak corto. Esperar 2-3 años mas de track record.'},
+  {tier:'B',ticker:'FAST',name:'Fastenal',sector:'Industrial',country:'🇺🇸',yield:'2.2%',freq:'Trimestral',streak:25,targetPrice:72,currency:'$',metrics:{pe:'30x',fcfPayout:'55%',debtEbitda:'0.0x',divGrowth5y:'11%',verdict:'ACUMULAR'},note:'Distribucion industrial con modelo vending machine. Sin deuda. Div crece 11% anual. PE alto pero negocio compounding excepcional.'},
+  {tier:'B',ticker:'TD',name:'TD Bank',sector:'Banca',country:'🇨🇦',yield:'5.0%',freq:'Trimestral',streak:25,targetPrice:58,currency:'$',metrics:{pe:'11x',fcfPayout:'55%',debtEbitda:'N/A',divGrowth5y:'5%',verdict:'ACUMULAR'},note:'Post-multa regulatoria EEUU. Yield 5% con PE bajo. Banca canadiense la mas segura del mundo. A $55-58 precio de entrada atractivo.'},
+  {tier:'B',ticker:'WEC',name:'WEC Energy',sector:'Utilities',country:'🇺🇸',yield:'3.5%',freq:'Trimestral',streak:22,targetPrice:90,currency:'$',metrics:{pe:'18x',fcfPayout:'65%',debtEbitda:'5.8x',divGrowth5y:'7%',verdict:'VIGILAR'},note:'Utility Midwest regulada. 22 años subida. 7% crecimiento es excepcional para utility. Buena empresa pero normalmente a precio justo.'},
+  {tier:'B',ticker:'HEI',name:'Heineken',sector:'Bebidas/Spirits',country:'🇳🇱',yield:'2.3%',freq:'Semestral',streak:15,targetPrice:88,currency:'€',metrics:{pe:'20x',fcfPayout:'35%',debtEbitda:'2.8x',divGrowth5y:'8%',verdict:'VIGILAR'},note:'Cerveza premium global. Crecimiento Asia + Africa. FCF payout bajo = mucho recorrido. Ticker AMS: HEIA. Precio empieza a ser interesante.'},
+  {tier:'B',ticker:'RI',name:'Pernod Ricard',sector:'Bebidas/Spirits',country:'🇫🇷',yield:'4.5%',freq:'Semestral',streak:15,targetPrice:95,currency:'€',metrics:{pe:'14x',fcfPayout:'55%',debtEbitda:'2.5x',divGrowth5y:'5%',verdict:'ACUMULAR'},note:'Jameson, Absolut, Mumm. Menor deuda que Diageo. Yield 4.5% con payout moderado. Si sector spirits se recupera, hay upside doble.'},
+  // TIER C
+  {tier:'C',ticker:'GIS',name:'General Mills',sector:'Consumer Staples',country:'🇺🇸',yield:'3.9%',freq:'Trimestral',streak:25,targetPrice:58,currency:'$',metrics:{pe:'13x',fcfPayout:'55%',debtEbitda:'3.8x',divGrowth5y:'2%',verdict:'VIGILAR'},note:'Cereales, Haagen-Dazs, Pillsbury. Crecimiento dividendo casi plano. Yield alta para el sector. Interesante si acelera crecimiento.'},
+  {tier:'C',ticker:'CL',name:'Colgate-Palmolive',sector:'Consumer Staples',country:'🇺🇸',yield:'2.3%',freq:'Trimestral',streak:61,targetPrice:85,currency:'$',metrics:{pe:'22x',fcfPayout:'65%',debtEbitda:'2.6x',divGrowth5y:'3%',verdict:'VIGILAR'},note:'61 años. 41% cuota global pasta dental. Pricing power probado. Premium alto para lo que ofrece. Esperar corrección a $82-85.'},
+  {tier:'C',ticker:'BMY',name:'Bristol-Myers Squibb',sector:'Healthcare',country:'🇺🇸',yield:'4.5%',freq:'Trimestral',streak:15,targetPrice:48,currency:'$',metrics:{pe:'7x',fcfPayout:'40%',debtEbitda:'3.2x',divGrowth5y:'5%',verdict:'VIGILAR'},note:'Yield alta y PE muy bajo. Riesgo pipeline post-patentes (Eliquis + Opdivo 2026-28). Si adquisiciones funcionan (Karuna, RayzeBio), hay valor.'},
+  {tier:'C',ticker:'ENEL',name:'Enel',sector:'Utilities',country:'🇮🇹',yield:'6.1%',freq:'Semestral',streak:15,targetPrice:7.5,currency:'€',metrics:{pe:'10x',fcfPayout:'65%',debtEbitda:'3.1x',divGrowth5y:'5%',verdict:'VIGILAR'},note:'Yield alta pero dividendo variable historicamente. Riesgo regulatorio Italia. Nueva politica dividendo mas estable desde 2023. Ticker BIT: ENEL.'},
+  {tier:'C',ticker:'REE',name:'Red Electrica',sector:'Utilities',country:'🇪🇸',yield:'5.2%',freq:'Semestral',streak:20,targetPrice:17.5,currency:'€',metrics:{pe:'14x',fcfPayout:'70%',debtEbitda:'4.5x',divGrowth5y:'2%',verdict:'VIGILAR'},note:'Infraestructura electrica española. Ingresos regulados predecibles. Riesgo regulacion CNMC. Yield atractiva pero crecimiento muy limitado.'},
+  {tier:'C',ticker:'BTI',name:'British Am. Tobacco',sector:'Tabaco',country:'🇬🇧',yield:'9.4%',freq:'Trimestral',streak:20,targetPrice:28,currency:'$',metrics:{pe:'6x',fcfPayout:'65%',debtEbitda:'3.0x',divGrowth5y:'2%',verdict:'EVITAR'},note:'Yield 9% = señal de alarma para DGI. Desinversion secular del tabaco. Aunque el dividendo esta cubierto, el precio del principal erosiona el retorno total.'},
+  {tier:'C',ticker:'PM',name:'Philip Morris',sector:'Tabaco/IQOS',country:'🇨🇭',yield:'4.4%',freq:'Trimestral',streak:16,targetPrice:125,currency:'$',metrics:{pe:'17x',fcfPayout:'85%',debtEbitda:'3.5x',divGrowth5y:'4%',verdict:'VIGILAR'},note:'Mejor que BTI gracias a IQOS (>40% ventas). FCF payout alto 85% — poco margen. Solo si IQOS sigue ganando cuota de forma clara.'},
+  {tier:'C',ticker:'VZ',name:'Verizon',sector:'Telecoms',country:'🇺🇸',yield:'6.8%',freq:'Trimestral',streak:18,targetPrice:40,currency:'$',metrics:{pe:'9x',fcfPayout:'60%',debtEbitda:'4.2x',divGrowth5y:'2%',verdict:'VIGILAR'},note:'Oligopolio telecoms USA. Yield alta pero crecimiento casi nulo. Si bajan tipos se revaloriza. Posicion defensiva pura, no growth.'},
+  {tier:'C',ticker:'K',name:'Kellanova',sector:'Consumer Staples',country:'🇺🇸',yield:'3.1%',freq:'Trimestral',streak:20,targetPrice:80,currency:'$',metrics:{pe:'20x',fcfPayout:'55%',debtEbitda:'3.2x',divGrowth5y:'4%',verdict:'VIGILAR'},note:'Pringles, Pop-Tarts, Cheez-It. Adquirida por Mars en 2024. Revisar disponibilidad y estructura actual antes de operar.'},
+  {tier:'C',ticker:'BUD',name:'AB InBev',sector:'Bebidas/Spirits',country:'🇧🇪',yield:'1.5%',freq:'Semestral',streak:3,targetPrice:52,currency:'€',metrics:{pe:'16x',fcfPayout:'25%',debtEbitda:'3.5x',divGrowth5y:'15%',verdict:'VIGILAR'},note:'Reconstruye dividendo post-deuda. Budweiser, Corona, Stella. Crece en emergentes. Streak muy corto para DGI puro — esperar 5+ años de historial.'},
+  {tier:'C',ticker:'AAPL',name:'Apple',sector:'Tecnología',country:'🇺🇸',yield:'0.5%',freq:'Trimestral',streak:12,targetPrice:210,currency:'$',metrics:{pe:'28x',fcfPayout:'15%',debtEbitda:'-1.5x',divGrowth5y:'5%',verdict:'VIGILAR'},note:'Yield casi irrelevante. El valor es el programa de recompras ($90B/año) + ecosistema. Caja neta enorme. Como compounder en cartera tiene sentido en correcciones.'},
+  {tier:'C',ticker:'NTR',name:'Nutrien',sector:'Materiales',country:'🇨🇦',yield:'4.1%',freq:'Trimestral',streak:12,targetPrice:52,currency:'$',metrics:{pe:'18x',fcfPayout:'40%',debtEbitda:'1.8x',divGrowth5y:'12%',verdict:'VIGILAR'},note:'Fertilizantes — ciclico. Entrada tactica cuando el ciclo esta abajo. Div crece fuerte pero volatil. No estructural para DGI, sino posicion tactica.'},
 ];
 
 function renderRadar(filter = 'all') {
@@ -1318,10 +1302,35 @@ function renderRadar(filter = 'all') {
     const cp = S.prices[r.ticker];
     const target = parseFloat(r.targetPrice) || 0;
     const inZone = target > 0 && cp > 0 && cp <= target;
+    const m = r.metrics || {};
+    const verdictColor = m.verdict==='COMPRAR' ? 'var(--greenL)' : m.verdict==='ACUMULAR' ? 'var(--goldL)' : m.verdict==='EVITAR' ? 'var(--redL)' : 'var(--ink3)';
+    const metricsBlock = m.pe ? `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border2)">
+        <div style="text-align:center">
+          <div style="font-size:9px;color:var(--ink3);letter-spacing:1px;text-transform:uppercase">P/E</div>
+          <div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink2)">${m.pe}</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:9px;color:var(--ink3);letter-spacing:1px;text-transform:uppercase">FCF Payout</div>
+          <div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink2)">${m.fcfPayout}</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:9px;color:var(--ink3);letter-spacing:1px;text-transform:uppercase">Deuda/EBITDA</div>
+          <div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink2)">${m.debtEbitda}</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:9px;color:var(--ink3);letter-spacing:1px;text-transform:uppercase">Div Growth 5y</div>
+          <div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accentL)">${m.divGrowth5y}</div>
+        </div>
+        <div style="text-align:center;grid-column:2/4">
+          <div style="font-size:9px;color:var(--ink3);letter-spacing:1px;text-transform:uppercase">Veredicto</div>
+          <div style="font-size:11px;font-weight:700;color:${verdictColor}">${m.verdict||'—'}</div>
+        </div>
+      </div>` : '';
     const priceLine = target > 0
-      ? `<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--border2)">
+      ? `<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:6px;border-top:1px solid var(--border2)">
           <span style="font-size:10px;color:var(--ink3)">Precio objetivo</span>
-          <span style="font-family:var(--mono);font-size:12px;color:${inZone?'var(--accentL)':'var(--goldL)'}">${r.currency||'$'}${target} ${inZone?'✓':''}</span>
+          <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:${inZone?'var(--accentL)':'var(--goldL)'}">${r.currency||'$'}${target}${inZone?' ✓':''}</span>
          </div>`
       : '';
     const deleteBtn = isCustom
@@ -1346,12 +1355,57 @@ function renderRadar(filter = 'all') {
           <div style="font-size:10px;color:var(--ink3);margin-top:1px">${r.streak} años streak</div>
         </div>
       </div>
-      <div style="font-size:11px;color:var(--ink3);margin-top:10px;padding-top:8px;border-top:1px solid var(--border2);line-height:1.6">${r.note}</div>
+      <div style="font-size:11px;color:var(--ink3);margin-top:10px;line-height:1.6">${r.note}</div>
+      ${metricsBlock}
       ${priceLine}
       <div style="display:flex;gap:6px;margin-top:10px">
         <button class="btn btn-ghost btn-sm" style="flex:1" onclick="addFromRadar('${r.ticker}','${r.name}','${r.sector}')">+ Posición</button>
       </div>
       ${deleteBtn}
+    </div>`;
+  }).join('');
+}
+
+function renderOportunidades() {
+  const allRadar = [...RADAR, ...(S.customRadar || [])];
+  const inZone = allRadar.filter(r => {
+    const target = parseFloat(r.targetPrice) || 0;
+    const cp = S.prices[r.ticker];
+    return target > 0 && cp > 0 && cp <= target;
+  });
+
+  const card = document.getElementById('oportunidades-card');
+  const list = document.getElementById('oportunidades-list');
+  const countEl = document.getElementById('oport-count');
+
+  if (!inZone.length) {
+    card.style.display = 'none';
+    return;
+  }
+
+  card.style.display = 'block';
+  countEl.textContent = inZone.length + ' empresa' + (inZone.length !== 1 ? 's' : '');
+
+  list.innerHTML = inZone.map(r => {
+    const cp = S.prices[r.ticker];
+    const target = parseFloat(r.targetPrice);
+    const discount = (((target - cp) / target) * 100).toFixed(1);
+    const sym = r.currency || '$';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border2)">
+      <div style="min-width:44px">
+        <div style="font-family:var(--mono);font-weight:700;font-size:14px;color:var(--accentL)">${r.ticker}</div>
+        <span class="tier-badge tier-${r.tier}" style="margin-top:3px;display:inline-block">Tier ${r.tier}</span>
+      </div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500;color:var(--ink)">${r.name}</div>
+        <div style="font-size:11px;color:var(--ink3)">${r.sector} · Yield ${r.yield}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:var(--mono);font-size:15px;font-weight:600;color:var(--greenL)">${sym}${cp}</div>
+        <div style="font-size:10px;color:var(--ink3)">obj. ${sym}${target} <span style="color:var(--accentL)">-${discount}%</span></div>
+        ${r.metrics ? `<div style="font-size:10px;color:var(--ink3);margin-top:2px">Yield ${r.yield}</div>` : ''}
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="addFromRadar('${r.ticker}','${r.name}','${r.sector}')">+ Comprar</button>
     </div>`;
   }).join('');
 }
@@ -1746,14 +1800,32 @@ async function refreshPricesAuto() {
   const usStocks = pos.filter(p => ['USD'].includes(p.currency)).map(p => p.ticker);
   let updated = 0, failed = [];
   
-  for (const ticker of usStocks) {
+  // Also fetch prices for radar companies that have a target price set
+  const radarUsTickers = [...RADAR, ...(S.customRadar||[])]
+    .filter(r => parseFloat(r.targetPrice) > 0 && !usStocks.includes(r.ticker))
+    .filter(r => !r.country || ['🇺🇸','🇨🇦','🇮🇪'].includes(r.country))
+    .map(r => r.ticker);
+  const allUsTickers = [...new Set([...usStocks, ...radarUsTickers])];
+
+  for (const ticker of allUsTickers) {
     try {
       const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
-      const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-      const res = await fetch(proxy, { signal: AbortSignal.timeout(8000) });
-      const data = await res.json();
-      const parsed = JSON.parse(data.contents);
-      const price = parsed?.chart?.result?.[0]?.meta?.regularMarketPrice;
+      let price = null;
+      // Try multiple proxies in sequence
+      const proxies = [
+        `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+      ];
+      for (const proxy of proxies) {
+        try {
+          const res = await fetch(proxy, { signal: AbortSignal.timeout(7000) });
+          const data = await res.json();
+          const raw = data.contents || data;
+          const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          price = parsed?.chart?.result?.[0]?.meta?.regularMarketPrice;
+          if (price && price > 0) break;
+        } catch(pe) { continue; }
+      }
       if (price && price > 0) {
         S.prices[ticker] = Math.round(price * 100) / 100;
         updated++;
@@ -1764,15 +1836,22 @@ async function refreshPricesAuto() {
       failed.push(ticker);
     }
   }
-  
+
   const eurStocks = pos.filter(p => ['EUR','PLN','GBP'].includes(p.currency)).map(p => p.ticker);
-  if (eurStocks.length) failed.push(...eurStocks);
+  // Also add EUR radar companies with targets
+  const radarEurTickers = [...RADAR, ...(S.customRadar||[])]
+    .filter(r => parseFloat(r.targetPrice) > 0 && ['🇪🇸','🇩🇪','🇫🇷','🇳🇱','🇮🇹','🇧🇪','🇨🇭','🇩🇰'].includes(r.country||''))
+    .map(r => r.ticker)
+    .filter(t => !failed.includes(t));
+  const allEurFailed = [...new Set([...eurStocks.map(p=>p), ...radarEurTickers])];
+  if (allEurFailed.length) failed.push(...allEurFailed.filter(t => !failed.includes(t)));
   
   S.priceDate = new Date().toLocaleDateString('es-ES');
   saveNavSnapshot();
   saveState();
   renderDashboard();
   renderPositions();
+  renderOportunidades();
   
   if (btn) { btn.textContent = '↻ Refresh'; btn.disabled = false; }
   
@@ -1813,6 +1892,7 @@ function saveQuickPrices() {
   closeModal('qprice-overlay');
   renderDashboard();
   renderPositions();
+  renderOportunidades();
   toast('✓ Precios actualizados');
 }
 
