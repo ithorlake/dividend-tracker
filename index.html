@@ -196,6 +196,7 @@ table.tbl tr:hover td{background:var(--bg3)}
       <button class="nav-tab" onclick="showTab('radar')">Radar</button>
       <button class="nav-tab" onclick="showTab('charts')">Gráficas</button>
       <button class="nav-tab" onclick="showTab('import')">Importar IB</button>
+      <button class="nav-tab" onclick="showTab('manual')">📖 Ayuda</button>
     </div>
     <div class="nav-actions">
       <button class="btn-nav" onclick="exportData()">↓ Backup</button>
@@ -492,6 +493,351 @@ table.tbl tr:hover td{background:var(--bg3)}
     </div>
   </div>
 </div>
+
+<!-- ══════════ MANUAL DE USUARIO ══════════ -->
+<div id="tab-manual" class="panel">
+  <div class="abar"><div class="abar-title">Manual de usuario</div>
+    <div style="font-size:12px;color:var(--ink3)">DividendTrack · Versión 5</div>
+  </div>
+
+  <!-- ÍNDICE -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="stitle">Índice</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px">
+      <a href="#m-concepto" style="color:var(--accentL);font-size:13px;text-decoration:none;padding:6px 0;display:block">① ¿Qué es DividendTrack?</a>
+      <a href="#m-datos" style="color:var(--accentL);font-size:13px;text-decoration:none;padding:6px 0;display:block">② Cómo se guardan tus datos</a>
+      <a href="#m-dashboard" style="color:var(--accentL);font-size:13px;text-decoration:none;padding:6px 0;display:block">③ Dashboard</a>
+      <a href="#m-posiciones" style="color:var(--accentL);font-size:13px;text-decoration:none;padding:6px 0;display:block">④ Posiciones</a>
+      <a href="#m-operaciones" style="color:var(--accentL);font-size:13px;text-decoration:none;padding:6px 0;display:block">⑤ Operaciones</a>
+      <a href="#m-calendario" style="color:var(--accentL);font-size:13px;text-decoration:none;padding:6px 0;display:block">⑥ Calendario de dividendos</a>
+      <a href="#m-proyeccion" style="color:var(--accentL);font-size:13px;text-decoration:none;padding:6px 0;display:block">⑦ Proyección</a>
+      <a href="#m-radar" style="color:var(--accentL);font-size:13px;text-decoration:none;padding:6px 0;display:block">⑧ Radar de empresas</a>
+      <a href="#m-graficas" style="color:var(--accentL);font-size:13px;text-decoration:none;padding:6px 0;display:block">⑨ Gráficas</a>
+      <a href="#m-importar" style="color:var(--accentL);font-size:13px;text-decoration:none;padding:6px 0;display:block">⑩ Importar desde IB</a>
+      <a href="#m-precios" style="color:var(--accentL);font-size:13px;text-decoration:none;padding:6px 0;display:block">⑪ Precios y tipos de cambio</a>
+      <a href="#m-backup" style="color:var(--accentL);font-size:13px;text-decoration:none;padding:6px 0;display:block">⑫ Backup y restauración</a>
+    </div>
+  </div>
+
+  <!-- ① QUÉ ES -->
+  <div class="card" style="margin-bottom:14px" id="m-concepto">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <span style="font-size:20px;background:rgba(58,139,101,.15);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center">①</span>
+      <div style="font-size:16px;font-weight:600">¿Qué es DividendTrack?</div>
+    </div>
+    <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin-bottom:12px">
+      DividendTrack es una herramienta personal para gestionar una cartera de inversión enfocada en dividendos crecientes (<strong style="color:var(--ink)">estrategia DGI — Dividend Growth Investing</strong>). El objetivo de la estrategia es construir una fuente de renta pasiva que crezca por encima de la inflación cada año, sin necesidad de vender acciones.
+    </p>
+    <div style="background:var(--bg3);border-radius:8px;padding:14px 16px;border-left:3px solid var(--accentL)">
+      <div style="font-size:12px;font-weight:600;color:var(--accentL);margin-bottom:6px">El principio básico del DGI</div>
+      <p style="font-size:13px;color:var(--ink2);line-height:1.7">Compras empresas que llevan 10, 25 o 60 años subiendo su dividendo cada año sin excepción. Con el tiempo, el dividendo que cobras sobre tu precio de compra original (yield on cost) supera con creces al yield actual del mercado. Una empresa que compras al 3% de yield hoy, si sube el dividendo un 7% anual, te paga el 6% sobre tu coste en 10 años y el 12% en 20 años.</p>
+    </div>
+  </div>
+
+  <!-- ② DATOS -->
+  <div class="card" style="margin-bottom:14px" id="m-datos">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <span style="font-size:20px;background:rgba(58,139,101,.15);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center">②</span>
+      <div style="font-size:16px;font-weight:600">Cómo se guardan tus datos</div>
+    </div>
+    <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin-bottom:12px">Todos tus datos se guardan en el <strong style="color:var(--ink)">localStorage de tu navegador</strong>, en el dispositivo donde abres la app. No se envía nada a ningún servidor. Nadie puede ver tu cartera excepto tú.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="background:var(--bg3);border-radius:8px;padding:12px 14px">
+        <div style="font-size:12px;font-weight:600;color:var(--accentL);margin-bottom:4px">✓ Persiste entre sesiones</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Cierras el navegador, vuelves a abrir la URL y todos tus datos siguen ahí.</p>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:12px 14px">
+        <div style="font-size:12px;font-weight:600;color:var(--goldL);margin-bottom:4px">⚠ No viaja entre dispositivos</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Si abres la app en el móvil y en el ordenador, son bases de datos separadas. Usa el backup JSON para sincronizar.</p>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:12px 14px">
+        <div style="font-size:12px;font-weight:600;color:var(--redL);margin-bottom:4px">✕ Se borra si limpias el navegador</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Si borras el historial o la caché del navegador, los datos desaparecen. Haz backup regularmente.</p>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:12px 14px">
+        <div style="font-size:12px;font-weight:600;color:var(--accentL);margin-bottom:4px">✓ Backup siempre disponible</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Botón <strong>↓ Backup</strong> (arriba derecha) descarga un archivo JSON con toda tu cartera. Guárdalo en Google Drive o similar.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ DASHBOARD -->
+  <div class="card" style="margin-bottom:14px" id="m-dashboard">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <span style="font-size:20px;background:rgba(58,139,101,.15);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center">③</span>
+      <div style="font-size:16px;font-weight:600">Dashboard — Resumen de cartera</div>
+    </div>
+    <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin-bottom:14px">La pantalla principal. De un vistazo ves el estado completo de tu cartera.</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px">Toggle € EUR / $ USD</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Botón arriba a la derecha del título. Convierte todos los KPIs entre euros y dólares usando el tipo de cambio que tengas actualizado en la franja FX.</p>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px">NAV Total</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6"><strong style="color:var(--ink2)">Net Asset Value</strong> — lo que recibirías si vendieras todo hoy. Incluye el valor de tus acciones a precio actual <em>más</em> el efectivo en cuenta (EUR + USD + PLN). Es el número más parecido a lo que muestra Interactive Brokers como "Valor de liquidación neto".</p>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px">Rendimiento total %</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Calcula: (valor actual de posiciones abiertas − coste de compra + plusvalías de posiciones cerradas) ÷ coste total invertido. No incluye dividendos cobrados en el cálculo — es la revalorización pura del capital.</p>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px">Progreso hacia objetivo mensual</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Barra de progreso que muestra cuánto del objetivo de dividendo mensual has alcanzado. El objetivo por defecto es €1.500/mes — cámbialo con el botón <strong>✎ Objetivo</strong> a cualquier cifra.</p>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--accentL);margin-bottom:4px">🎯 Oportunidades activas</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Aparece automáticamente cuando alguna empresa del radar tiene precio actual ≤ precio objetivo que hayas configurado. Lista las empresas en zona de compra con precio actual, objetivo y descuento en %.</p>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--goldL);margin-bottom:4px">⚡ Banner de tipos FX desactualizados</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Aparece si han pasado más de 7 días desde la última actualización de los tipos de cambio USD/EUR, GBP/EUR y PLN/EUR. Como tienes acciones en USD, una variación del 5% en el tipo de cambio puede mover tu NAV €200. Actualiza semanalmente para cifras precisas.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ POSICIONES -->
+  <div class="card" style="margin-bottom:14px" id="m-posiciones">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <span style="font-size:20px;background:rgba(58,139,101,.15);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center">④</span>
+      <div style="font-size:16px;font-weight:600">Posiciones actuales</div>
+    </div>
+    <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin-bottom:14px">Tabla con todas tus posiciones abiertas. Se calcula automáticamente a partir del historial de operaciones — no se edita directamente aquí.</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px">Indicadores de precio actual</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:12px;color:var(--ink3)"><span style="color:var(--accentL);font-weight:600">⟳ verde</span> — Precio automático vía Yahoo Finance. Se actualiza al pulsar ↻ Refresh.</div>
+          <div style="font-size:12px;color:var(--ink3)"><span style="color:var(--goldL);font-weight:600">✎ dorado</span> — Precio manual introducido hace menos de 7 días.</div>
+          <div style="font-size:12px;color:var(--ink3)"><span style="color:var(--redL);font-weight:600">⚠ rojo</span> — Precio manual sin actualizar hace más de 7 días. P&L puede no ser preciso.</div>
+          <div style="font-size:12px;color:var(--ink3)"><span style="color:var(--ink3);font-weight:600">? gris</span> — Sin precio asignado. La app usa el precio de coste como referencia.</div>
+        </div>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px">Clasificación DGI</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+          <span class="badge b-green">DGI</span>
+          <span class="badge b-gold">TRANSICIÓN</span>
+          <span class="badge b-red">ESPECULATIVA</span>
+        </div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Indica si la posición es un dividendo creciente consolidado (DGI), una empresa que estás rotando hacia DGI (Transición) o una posición especulativa sin dividendo que planeas cerrar. Se edita con el botón ✎ de cada fila.</p>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px">Yield sobre coste</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">El KPI más importante del DGI. Es el dividendo anual que cobras dividido entre lo que pagaste por las acciones (no el precio actual). Cuanto más tiempo llevas en la posición y más crece el dividendo, más alto será este número. Una posición comprada al 3% con 10 años de dividendo creciente al 7% tendrá un yield sobre coste del ~6%.</p>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px">Botón ✎ — Editar posición</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Abre un formulario donde puedes actualizar: dividendo anual por acción (cuando la empresa lo sube), frecuencia de pago, sector, clasificación DGI, precio objetivo personal y notas de tesis de inversión.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑤ OPERACIONES -->
+  <div class="card" style="margin-bottom:14px" id="m-operaciones">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <span style="font-size:20px;background:rgba(58,139,101,.15);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center">⑤</span>
+      <div style="font-size:16px;font-weight:600">Operaciones</div>
+    </div>
+    <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin-bottom:14px">El historial de todas tus compras, ventas y dividendos cobrados. Es la fuente de verdad de la app — las posiciones y el dashboard se calculan a partir de aquí.</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--accentL);margin-bottom:4px">+ Compra / Venta</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Registra cada operación con: ticker, nombre, fecha, número de acciones, precio por acción, divisa, <strong style="color:var(--ink2)">dividendo anual por acción</strong> (dato clave que hay que introducir manualmente), frecuencia de pago, sector y comisión del broker.</p>
+        <div style="background:var(--bg3);border-radius:6px;padding:8px 10px;margin-top:8px">
+          <div style="font-size:11px;color:var(--goldL);font-weight:600;margin-bottom:3px">⚠ Sobre el dividendo anual</div>
+          <p style="font-size:11px;color:var(--ink3);line-height:1.5">Las APIs gratuitas no devuelven el dividendo de forma fiable. Debes buscarlo tú en Google Finance, Yahoo Finance o la web de la empresa e introducirlo aquí. Es el dato que determina todos los cálculos de renta.</p>
+        </div>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--accentL);margin-bottom:4px">+ Dividendo cobrado</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Registra cada cobro real de dividendo con: ticker, fecha, importe bruto, divisa y retención fiscal aplicada. Este historial alimenta el calendario y los totales de dividendos cobrados. La retención por defecto es 19% (España) — ajusta según el país origen de cada empresa (EEUU: 15%, Canadá: 15%, España: 19%).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑥ CALENDARIO -->
+  <div class="card" style="margin-bottom:14px" id="m-calendario">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <span style="font-size:20px;background:rgba(58,139,101,.15);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center">⑥</span>
+      <div style="font-size:16px;font-weight:600">Calendario de dividendos</div>
+    </div>
+    <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin-bottom:14px">Dos vistas: los próximos 12 meses estimados y el historial de cobros reales ya registrados.</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px">Estimación próximos 12 meses</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Se calcula automáticamente a partir de tus posiciones actuales y la frecuencia de pago de cada una. El mes actual aparece resaltado. La estimación es aproximada — los pagos reales pueden variar ligeramente según el calendario exacto de cada empresa.</p>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px">Historial de cobros</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Muestra todos los dividendos que has registrado manualmente con botón <strong>+ Dividendo cobrado</strong>. Incluye el neto después de retención en euros. El total histórico es la renta real que ha generado tu cartera desde el inicio.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑦ PROYECCIÓN -->
+  <div class="card" style="margin-bottom:14px" id="m-proyeccion">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <span style="font-size:20px;background:rgba(58,139,101,.15);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center">⑦</span>
+      <div style="font-size:16px;font-weight:600">Proyección a largo plazo</div>
+    </div>
+    <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin-bottom:14px">Simula el crecimiento de tu cartera y dividendos a 5-30 años con los parámetros que elijas.</p>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px">Capital inicial</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Si lo dejas a 0, usa automáticamente el coste real de tu cartera actual. Ponlo manualmente si quieres simular un escenario diferente al tuyo actual.</p>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px">Yield medio esperado</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">El yield medio de tu cartera cuando esté completa. Para una cartera DGI mixta, entre 3.5% y 4.5% es realista. Más alto implica más renta hoy pero menos crecimiento futuro.</p>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px">Crecimiento dividendo anual</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">La tasa a la que esperan crecer tus dividendos cada año. Las mejores empresas DGI (Dividend Kings/Aristocrats) han crecido entre 5% y 10% anual durante décadas. Un 6-7% es una estimación conservadora razonable.</p>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--accentL);margin-bottom:4px">Reinvertir dividendos (DRIP)</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Cuando está activado, los dividendos de cada año se suman al capital y generan más dividendos el siguiente año. Este efecto compuesto es fundamental: con DRIP activo los primeros 10 años, el capital final y los dividendos mensuales pueden ser el doble que sin reinvertir.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑧ RADAR -->
+  <div class="card" style="margin-bottom:14px" id="m-radar">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <span style="font-size:20px;background:rgba(58,139,101,.15);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center">⑧</span>
+      <div style="font-size:16px;font-weight:600">Radar de empresas</div>
+    </div>
+    <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin-bottom:14px">49 empresas pre-analizadas para una cartera DGI, organizadas en 3 tiers. Cada tarjeta muestra los 6 indicadores financieros clave para tomar la decisión de compra.</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+          <span class="tier-badge tier-A">Tier A</span>
+          <span class="tier-badge tier-B">Tier B</span>
+          <span class="tier-badge tier-C">Tier C</span>
+        </div>
+        <div style="font-size:12px;color:var(--ink3);line-height:1.8">
+          <strong style="color:var(--accentL)">Tier A</strong> — Alta convicción. Empresas con moat amplio, dividendo muy seguro y precio de entrada atractivo. Comprar cuando el precio baja al objetivo.<br>
+          <strong style="color:var(--blueL)">Tier B</strong> — Buenas empresas, esperar precio adecuado. Añadir a la cartera progresivamente.<br>
+          <strong style="color:var(--goldL)">Tier C</strong> — Con cautela. Algunas tienen riesgo ESG, dividendo variable o track record corto.
+        </div>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px">Los 6 indicadores financieros</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div style="font-size:12px;color:var(--ink3)"><strong style="color:var(--ink2);font-family:var(--mono)">P/E</strong> — Precio sobre beneficio anual. Indica si la acción cotiza cara o barata. Para REITs se usa P/AFFO (fondos de operaciones ajustados), más apropiado para ese sector.</div>
+          <div style="font-size:12px;color:var(--ink3)"><strong style="color:var(--ink2);font-family:var(--mono)">FCF Payout</strong> — El más importante. Es qué porcentaje del flujo de caja libre se destina a dividendos. Si supera el 90%, el dividendo está en riesgo. Por debajo del 60% hay mucho margen para seguir creciendo.</div>
+          <div style="font-size:12px;color:var(--ink3)"><strong style="color:var(--ink2);font-family:var(--mono)">Deuda/EBITDA</strong> — Cuántos años de beneficio operativo necesita la empresa para pagar su deuda. Por encima de 3x empieza a ser elevado. Si el negocio flojea y la deuda es alta, el dividendo es lo primero que se recorta.</div>
+          <div style="font-size:12px;color:var(--ink3)"><strong style="color:var(--ink2);font-family:var(--mono)">Div Growth 5y</strong> — Tasa de crecimiento del dividendo en los últimos 5 años. El motor del DGI. Un 5-8% sostenido dobla tu renta en 9-14 años.</div>
+          <div style="font-size:12px;color:var(--ink3)"><strong style="color:var(--ink2);font-family:var(--mono)">Veredicto</strong> — Evaluación del momento actual: COMPRAR (precio atractivo ahora), ACUMULAR (buena empresa, precio justo), VIGILAR (esperar o analizar más), EVITAR (riesgo estructural).</div>
+        </div>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--accentL);margin-bottom:4px">🎯 Alerta de precio objetivo</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Cada empresa tiene un precio objetivo de compra pre-configurado basado en análisis fundamental. Cuando el precio actual (actualizado con ↻ Refresh) es igual o inferior al objetivo, la tarjeta se ilumina en verde con el banner <strong>"EN ZONA DE COMPRA"</strong> y la empresa aparece en el bloque de Oportunidades del Dashboard.</p>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px">Ocultar / Mostrar empresas</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">El botón <strong>✕</strong> en cada tarjeta oculta la empresa de tu radar. No la borra — aparece en el filtro <strong>"Ocultas"</strong> y puedes recuperarla con el botón ↩. Las empresas que añadas tú manualmente sí se pueden eliminar definitivamente.</p>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px">+ Añadir empresa</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">El botón verde <strong>+ Añadir empresa</strong> abre un formulario para añadir cualquier empresa que no esté en el radar pre-cargado, con todos los mismos campos: ticker, sector, yield, frecuencia, streak, tier, precio objetivo y nota.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑨ GRÁFICAS -->
+  <div class="card" style="margin-bottom:14px" id="m-graficas">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <span style="font-size:20px;background:rgba(58,139,101,.15);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center">⑨</span>
+      <div style="font-size:16px;font-weight:600">Gráficas históricas</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px">Evolución del NAV</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Gráfica de línea que muestra el valor total de tu cartera en el tiempo. Se guarda un punto automáticamente cada día que abras la app o pulses ↻ Refresh. Los primeros días estará casi vacía — se irá llenando con el uso.</p>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px">Dividendos cobrados por mes</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Gráfica de barras con el importe neto de dividendos cobrados cada mes, calculado en euros. Se alimenta de los cobros que registres en Operaciones. Con datos desde julio 2024 ya tienes un histórico interesante.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑩ IMPORTAR IB -->
+  <div class="card" style="margin-bottom:14px" id="m-importar">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <span style="font-size:20px;background:rgba(58,139,101,.15);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center">⑩</span>
+      <div style="font-size:16px;font-weight:600">Importar desde Interactive Brokers</div>
+    </div>
+    <p style="font-size:14px;color:var(--ink2);line-height:1.8;margin-bottom:14px">Puedes importar tu historial de operaciones directamente desde IB sin introducirlas a mano.</p>
+    <div style="background:var(--bg3);border-radius:8px;padding:14px 16px;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:8px">Cómo exportar desde Interactive Brokers:</div>
+      <ol style="padding-left:18px;font-size:12px;color:var(--ink3);line-height:2">
+        <li>Accede a <strong style="color:var(--ink2)">Client Portal</strong> de IB</li>
+        <li>Ve a <strong style="color:var(--ink2)">Informes → Extractos → Extracto de actividad</strong></li>
+        <li>Selecciona <strong style="color:var(--ink2)">Formato: CSV</strong> y período <strong style="color:var(--ink2)">Todas las fechas</strong></li>
+        <li>Descarga el archivo (ej. <code style="background:var(--bg4);padding:1px 6px;border-radius:4px">U1234567_activity.csv</code>)</li>
+        <li>Arrástralo a la zona de importación o usa el botón de selección</li>
+      </ol>
+    </div>
+    <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+      <div style="font-size:13px;font-weight:600;color:var(--goldL);margin-bottom:4px">⚠ Importante tras importar</div>
+      <p style="font-size:12px;color:var(--ink3);line-height:1.6">El dividendo anual por acción se importa como 0 para todas las posiciones. Debes editarlas una a una (botón ✎ en Posiciones) para añadir el dato de dividendo correcto de cada empresa. Sin este dato, los cálculos de renta no serán correctos.</p>
+    </div>
+  </div>
+
+  <!-- ⑪ PRECIOS Y FX -->
+  <div class="card" style="margin-bottom:14px" id="m-precios">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <span style="font-size:20px;background:rgba(58,139,101,.15);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center">⑪</span>
+      <div style="font-size:16px;font-weight:600">Precios y tipos de cambio</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--accentL);margin-bottom:4px">↻ Refresh — actualización automática</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Al pulsar el botón verde <strong>↻ Refresh</strong>, la app consulta Yahoo Finance para actualizar precios de acciones que cotizan en <strong>NYSE y NASDAQ</strong> (acciones americanas y canadienses en USD). También consulta precios de las empresas del radar que tengan precio objetivo configurado.</p>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--goldL);margin-bottom:4px">Acciones europeas — actualización manual</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">Las acciones de bolsas europeas (BME, Euronext, Xetra, SWX...) como ENG, FDJU, REE o ENEL no se actualizan automáticamente. Tras pulsar Refresh, aparece un formulario rápido donde introduces los precios actuales de estas posiciones. Consulta los precios en tu broker o en Google Finance.</p>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px">✎ FX — tipos de cambio</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">El botón <strong>✎ FX</strong> (arriba derecha) abre el formulario de tipos de cambio. Actualiza USD/EUR, GBP/EUR, PLN/EUR y CAD/EUR consultando xe.com o tu broker. Recomendado actualizarlo una vez a la semana si tienes posiciones en divisas distintas al euro.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑫ BACKUP -->
+  <div class="card" style="margin-bottom:14px" id="m-backup">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <span style="font-size:20px;background:rgba(58,139,101,.15);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center">⑫</span>
+      <div style="font-size:16px;font-weight:600">Backup y restauración</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--accentL);margin-bottom:4px">↓ Backup — descargar copia</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">El botón <strong>↓ Backup</strong> (arriba derecha) descarga un archivo <code style="background:var(--bg4);padding:1px 6px;border-radius:4px">.json</code> con toda tu cartera: operaciones, dividendos cobrados, precios, tipos de cambio, configuración del radar y metadatos de posiciones. Guárdalo en Google Drive, Dropbox o donde prefieras. <strong style="color:var(--ink2)">Hazlo al menos una vez al mes.</strong></p>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px">Restaurar backup</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">En la pestaña <strong>Importar IB</strong> hay un botón <strong>"Seleccionar JSON"</strong> que carga cualquier backup descargado previamente. Útil para recuperar datos si limpias el navegador, o para pasar la cartera a otro dispositivo.</p>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--redL);margin-bottom:4px">⚠ Borrar caché y recargar</div>
+        <p style="font-size:12px;color:var(--ink3);line-height:1.6">En Importar IB hay también un botón rojo <strong>"⚠ Borrar caché y recargar"</strong> que elimina todos los datos del navegador y recarga la app con los datos originales de IB. Usar solo si hay un problema técnico con los datos. Irreversible si no tienes backup.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER MANUAL -->
+  <div style="text-align:center;padding:20px;color:var(--ink3);font-size:12px;border-top:1px solid var(--border);margin-top:8px">
+    DividendTrack · No es asesoramiento financiero · Los datos y precios objetivo son orientativos y se basan en análisis a agosto 2025 · Verifica siempre la información antes de invertir
+  </div>
+
+</div><!-- end tab-manual -->
 
 </div><!-- end .app -->
 
@@ -2084,7 +2430,7 @@ function restoreBackup() {
 // ════════════════════════════════════════════
 // TAB NAVIGATION
 // ════════════════════════════════════════════
-const TABS = ['dashboard','positions','trades','calendar','projection','radar','charts','import'];
+const TABS = ['dashboard','positions','trades','calendar','projection','radar','charts','import','manual'];
 function showTab(id) {
   TABS.forEach((t, i) => {
     document.getElementById('tab-' + t).classList.toggle('active', t === id);
