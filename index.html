@@ -144,6 +144,12 @@ table.tbl tr:hover td{background:var(--bg3)}
 .pill{background:none;border:1px solid var(--border);border-radius:20px;padding:5px 14px;cursor:pointer;font-size:12px;font-family:var(--font);color:var(--ink3);font-weight:500;transition:all .15s}
 .pill:hover{border-color:var(--accentL);color:var(--accentL)}
 .pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.pill.active[id^="vf-"]{background:none;border-width:2px;font-weight:600}
+#vf-comprar.active{border-color:var(--greenL);color:var(--greenL);background:rgba(46,204,113,.1)}
+#vf-acumular.active{border-color:var(--goldL);color:var(--goldL);background:rgba(221,168,32,.1)}
+#vf-vigilar.active{border-color:var(--ink2);color:var(--ink2);background:rgba(255,255,255,.05)}
+#vf-evitar.active{border-color:var(--redL);color:var(--redL);background:rgba(224,80,64,.1)}
+#vf-zona.active{border-color:var(--accentL);color:var(--accentL);background:rgba(58,139,101,.1)}
 
 /* EMPTY */
 .empty{text-align:center;padding:36px 20px;color:var(--ink3)}
@@ -409,12 +415,21 @@ table.tbl tr:hover td{background:var(--bg3)}
     <div class="abar-title">Empresas en vigilancia</div>
     <button class="btn btn-primary" onclick="openAddRadarForm()">+ Añadir empresa</button>
   </div>
-  <div class="filter-row" id="radar-filter-row">
-    <button class="pill active" onclick="filterRadar('all',this)">Todas (<span id="radar-count">49</span>)</button>
-    <button class="pill" onclick="filterRadar('A',this)">Tier A</button>
-    <button class="pill" onclick="filterRadar('B',this)">Tier B</button>
-    <button class="pill" onclick="filterRadar('C',this)">Tier C</button>
-    <button class="pill" id="pill-hidden" onclick="filterRadar('hidden',this)" style="display:none;border-color:var(--redL);color:var(--redL)">Ocultas (<span id="hidden-count">0</span>)</button>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px" id="radar-filter-row">
+    <button class="pill active" onclick="filterRadar('all',this)" data-tier="all">Todas (<span id="radar-count">49</span>)</button>
+    <button class="pill" onclick="filterRadar('A',this)" data-tier="A">Tier A</button>
+    <button class="pill" onclick="filterRadar('B',this)" data-tier="B">Tier B</button>
+    <button class="pill" onclick="filterRadar('C',this)" data-tier="C">Tier C</button>
+    <button class="pill" id="pill-hidden" onclick="filterRadar('hidden',this)" data-tier="hidden" style="display:none;border-color:var(--redL);color:var(--redL)">Ocultas (<span id="hidden-count">0</span>)</button>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px" id="radar-verdict-row">
+    <span style="font-size:11px;color:var(--ink3);align-self:center;margin-right:2px">Veredicto:</span>
+    <button class="pill active-v" id="vf-all"     onclick="filterVerdict('all',this)"      style="font-size:11px;padding:4px 12px">Todos</button>
+    <button class="pill" id="vf-comprar"  onclick="filterVerdict('COMPRAR',this)"   style="font-size:11px;padding:4px 12px;color:var(--greenL);border-color:rgba(46,204,113,.3)">● Comprar</button>
+    <button class="pill" id="vf-acumular" onclick="filterVerdict('ACUMULAR',this)"  style="font-size:11px;padding:4px 12px;color:var(--goldL);border-color:rgba(221,168,32,.3)">● Acumular</button>
+    <button class="pill" id="vf-vigilar"  onclick="filterVerdict('VIGILAR',this)"   style="font-size:11px;padding:4px 12px;color:var(--ink3);border-color:var(--border)">● Vigilar</button>
+    <button class="pill" id="vf-evitar"   onclick="filterVerdict('EVITAR',this)"    style="font-size:11px;padding:4px 12px;color:var(--redL);border-color:rgba(224,80,64,.3)">● Evitar</button>
+    <button class="pill" id="vf-zona"     onclick="filterVerdict('ZONA',this)"      style="font-size:11px;padding:4px 12px;color:var(--accentL);border-color:rgba(58,139,101,.4)">🎯 En zona</button>
   </div>
   <div class="radar-grid" id="radar-grid"></div>
 </div>
@@ -1201,6 +1216,7 @@ function getPriceStaleness(ticker, currency) {
 
 // ── Currency display toggle ──
 let displayCurrency = 'EUR'; // 'EUR' | 'USD'
+let activeVerdictFilter = 'all'; // 'all' | 'COMPRAR' | 'ACUMULAR' | 'VIGILAR' | 'EVITAR' | 'ZONA'
 
 function setCurrency(cur) {
   displayCurrency = cur;
@@ -1339,7 +1355,7 @@ function renderDashboard() {
 
   // Progress
   document.getElementById('prog-pct').textContent = prog + '%';
-  document.getElementById('prog-bar').style.width = prog + '%';
+  const progBar = document.getElementById('prog-bar'); if(progBar) progBar.style.width = prog + '%';
   document.getElementById('prog-actual').textContent = formatAmount(divMo) + '/mes actual';
   document.getElementById('prog-goal').textContent = formatAmount(goal) + '/mes';
   document.getElementById('goal-display').textContent = formatAmount(goal);
@@ -1350,7 +1366,7 @@ function renderDashboard() {
   if(document.getElementById('kpi-cash-usd')) document.getElementById('kpi-cash-usd').textContent = '$' + fn(cash.USD||0,2);
   if(document.getElementById('kpi-cash-pln')) document.getElementById('kpi-cash-pln').textContent = 'zł' + fn(cash.PLN||0,2);
   document.getElementById('prog-pct').textContent = prog + '%';
-  document.getElementById('prog-bar').style.width = prog + '%';
+
   document.getElementById('prog-actual').textContent = fe(divMo) + '/mes';
   document.getElementById('dash-date').textContent = new Date().toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
   // Render oportunidades activas
@@ -1365,6 +1381,7 @@ function renderDashboard() {
 
   // Top div list
   const topEl = document.getElementById('top-div');
+  if (!topEl) return;
   if (!pos.length) {
     topEl.innerHTML = '<div class="empty"><div class="empty-ico">📊</div><p>Sin posiciones aún</p><button class="btn btn-primary" onclick="openTradeForm(\'BUY\')">+ Primera compra</button></div>';
   } else {
@@ -1744,10 +1761,43 @@ const RADAR = [
 ];
 
 function renderRadar(filter = 'all') {
-  const data = filter === 'all' ? RADAR : RADAR.filter(r => r.tier === filter);
-  const tierColor = { A: '#1a5235', B: '#0A3A6A', C: '#7A5800' };
+  const hidden = S.hiddenRadar || [];
   const customRadar = S.customRadar || [];
-  const allRadar = [...data, ...customRadar.filter(c => filter==='all' || c.tier===filter)];
+  const data = filter === 'all' ? RADAR : RADAR.filter(r => r.tier === filter);
+
+  // Apply verdict filter if active
+  function matchesVerdict(r) {
+    if (activeVerdictFilter === 'all') return true;
+    if (activeVerdictFilter === 'ZONA') {
+      const target = parseFloat(r.targetPrice) || 0;
+      const cp = S.prices[r.ticker];
+      return target > 0 && cp > 0 && cp <= target;
+    }
+    return (r.metrics?.verdict || '') === activeVerdictFilter;
+  }
+  const tierColor = { A: '#1a5235', B: '#0A3A6A', C: '#7A5800' };
+    const allRadar = [...data, ...customRadar.filter(c => filter==='all' || c.tier===filter)];
+  // Update verdict pill counts
+  const allVisible = [...RADAR.filter(r => !hidden.includes(r.ticker)), ...customRadar.filter(r => !hidden.includes(r.ticker))];
+  const vCounts = {
+    COMPRAR:  allVisible.filter(r => r.metrics?.verdict === 'COMPRAR').length,
+    ACUMULAR: allVisible.filter(r => r.metrics?.verdict === 'ACUMULAR').length,
+    VIGILAR:  allVisible.filter(r => r.metrics?.verdict === 'VIGILAR').length,
+    EVITAR:   allVisible.filter(r => r.metrics?.verdict === 'EVITAR').length,
+    ZONA:     allVisible.filter(r => { const t=parseFloat(r.targetPrice)||0; const cp=S.prices[r.ticker]; return t>0&&cp>0&&cp<=t; }).length,
+  };
+  const verdictMap = {
+    'vf-comprar': 'COMPRAR', 'vf-acumular': 'ACUMULAR',
+    'vf-vigilar': 'VIGILAR', 'vf-evitar': 'EVITAR', 'vf-zona': 'ZONA'
+  };
+  Object.entries(verdictMap).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const base = el.textContent.replace(/\s*\(\d+\)/, '').trim();
+      el.textContent = vCounts[key] > 0 ? base + ' (' + vCounts[key] + ')' : base;
+    }
+  });
+
   document.getElementById('radar-grid').innerHTML = allRadar.map((r,idx) => {
     const isCustom = !!r._custom;
     const cp = S.prices[r.ticker];
@@ -1831,6 +1881,7 @@ function renderOportunidades() {
   const card = document.getElementById('oportunidades-card');
   const list = document.getElementById('oportunidades-list');
   const countEl = document.getElementById('oport-count');
+  if (!card) return;
 
   if (!inZone.length) {
     card.style.display = 'none';
@@ -1938,8 +1989,10 @@ function renderCharts() {
 }
 
 function filterRadar(tier, btn) {
-  document.querySelectorAll('.filter-row .pill').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  // Handle case where user clicks on inner <span> instead of button
+  const actualBtn = btn ? (btn.classList.contains('pill') ? btn : btn.closest('.pill')) : null;
+  document.querySelectorAll('#radar-filter-row .pill').forEach(b => b.classList.remove('active'));
+  if (actualBtn) actualBtn.classList.add('active');
   renderRadar(tier);
 }
 
@@ -2505,6 +2558,24 @@ function deleteCustomRadar(idx) {
   renderRadar();
   toast('Empresa eliminada del radar');
 }
+function filterVerdict(verdict, btn) {
+  activeVerdictFilter = verdict;
+  // Update active state on verdict pills
+  document.querySelectorAll('#radar-verdict-row .pill').forEach(p => {
+    p.classList.remove('active');
+    if (p && p.style) p.style.fontWeight = '400';
+  });
+  const actualBtn = btn ? (btn.classList && btn.classList.contains('pill') ? btn : (btn.closest ? btn.closest('.pill') : btn)) : null;
+  if (actualBtn) {
+    actualBtn.classList.add('active');
+    actualBtn.style.fontWeight = '600';
+  }
+  // Re-render with current tier filter
+  const activeTierBtn = document.querySelector('#radar-filter-row .pill.active');
+  const currentTier = activeTierBtn ? activeTierBtn.getAttribute('data-tier') || 'all' : 'all';
+  renderRadar(currentTier);
+}
+
 function hideRadar(ticker) {
   if (!S.hiddenRadar) S.hiddenRadar = [];
   if (!S.hiddenRadar.includes(ticker)) {
@@ -2518,113 +2589,4 @@ function hideRadar(ticker) {
 function unhideRadar(ticker) {
   if (!S.hiddenRadar) return;
   S.hiddenRadar = S.hiddenRadar.filter(t => t !== ticker);
-  saveState();
-  renderRadar('hidden');
-  // If no more hidden, switch to all
-  if (S.hiddenRadar.length === 0) {
-    document.querySelectorAll('.filter-row .pill').forEach(p => p.classList.remove('active'));
-    document.querySelector('.filter-row .pill').classList.add('active');
-    renderRadar('all');
-  }
-  toast(ticker + ' restaurada al radar');
-}
-
-function saveRadarCompany() {
-  const company = {
-    ticker: document.getElementById('r-ticker').value.toUpperCase().trim(),
-    name: document.getElementById('r-name').value.trim(),
-    country: document.getElementById('r-country').value.trim(),
-    sector: document.getElementById('r-sector').value,
-    yield: document.getElementById('r-yield').value.trim() || '—',
-    freq: document.getElementById('r-freq').value,
-    streak: parseInt(document.getElementById('r-streak').value) || 0,
-    tier: document.getElementById('r-tier').value,
-    targetPrice: parseFloat(document.getElementById('r-target').value) || 0,
-    currency: document.getElementById('r-currency').value,
-    note: document.getElementById('r-note').value.trim(),
-    _custom: true
-  };
-  if (!company.ticker || !company.name) { alert('Ticker y nombre son obligatorios.'); return; }
-  if (!S.customRadar) S.customRadar = [];
-  const editIdx = parseInt(document.getElementById('radar-edit-idx').value);
-  if (editIdx >= 0) {
-    S.customRadar[editIdx] = company;
-    toast('✓ Empresa actualizada en el radar');
-  } else {
-    S.customRadar.push(company);
-    toast('✓ ' + company.ticker + ' añadida al radar');
-  }
-  saveState();
-  closeModal('radar-overlay');
-  renderRadar();
-}
-
-// ════════════════════════════════════════════
-// CASH MANAGEMENT
-// ════════════════════════════════════════════
-function openCashForm() {
-  const c = S.cash || {};
-  document.getElementById('cash-eur').value = c.EUR || 0;
-  document.getElementById('cash-usd').value = c.USD || 0;
-  document.getElementById('cash-pln').value = c.PLN || 0;
-  document.getElementById('cash-gbp').value = c.GBP || 0;
-  updateCashPreview();
-  document.getElementById('cash-overlay').classList.add('open');
-}
-
-function updateCashPreview() {
-  const eur = parseFloat(document.getElementById('cash-eur').value)||0;
-  const usd = parseFloat(document.getElementById('cash-usd').value)||0;
-  const pln = parseFloat(document.getElementById('cash-pln').value)||0;
-  const gbp = parseFloat(document.getElementById('cash-gbp').value)||0;
-  const total = eur + toEur(usd,'USD') + toEur(pln,'PLN') + toEur(gbp,'GBP');
-  document.getElementById('cash-total-preview').textContent = fe(total);
-}
-
-// Live preview as user types
-['cash-eur','cash-usd','cash-pln','cash-gbp'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener('input', updateCashPreview);
-});
-
-function saveCash() {
-  S.cash = {
-    EUR: parseFloat(document.getElementById('cash-eur').value)||0,
-    USD: parseFloat(document.getElementById('cash-usd').value)||0,
-    PLN: parseFloat(document.getElementById('cash-pln').value)||0,
-    GBP: parseFloat(document.getElementById('cash-gbp').value)||0,
-  };
-  saveState();
-  closeModal('cash-overlay');
-  renderDashboard();
-  const total = S.cash.EUR + toEur(S.cash.USD,'USD') + toEur(S.cash.PLN,'PLN') + toEur(S.cash.GBP,'GBP');
-  toast('✓ Efectivo actualizado — total ' + fe(total));
-}
-
-// ════════════════════════════════════════════
-// INIT
-// ════════════════════════════════════════════
-loadState();
-if (S.fx.USD) document.getElementById('fx-usd-disp').textContent = S.fx.USD;
-if (S.fx.GBP) document.getElementById('fx-gbp-disp').textContent = S.fx.GBP;
-if (S.fx.CAD) document.getElementById('fx-cad-disp').textContent = S.fx.CAD;
-if (S.fxDate) document.getElementById('fx-date-disp').textContent = 'Actualizado ' + S.fxDate;
-// Set default DGI classification for existing positions
-if (!S.posMeta) S.posMeta = {};
-const defaultMeta = {
-  'O':    { dgi: 'dgi',          target: 70,  notes: 'Core DGI. Dividendo mensual. 133 subidas.' },
-  'ENG':  { dgi: 'transicion',   target: 18,  notes: 'Utility española. Revisar política dividendo.' },
-  'FDJU': { dgi: 'transicion',   target: 30,  notes: 'FDJ United post-fusión. Confirmar dividendo.' },
-  'ADBE': { dgi: 'especulativa', target: 320, notes: 'Sin dividendo. Rotar a DGI cuando tomar beneficio.' },
-  'SPR':  { dgi: 'especulativa', target: 550, notes: 'Especulativa Polonia. 1 acc. residual.' },
-};
-Object.keys(defaultMeta).forEach(k => {
-  if (!S.posMeta[k]) S.posMeta[k] = defaultMeta[k];
-});
-saveNavSnapshot();
-renderDashboard();
-renderRadar();
-calcProj();
-</script>
-</body>
-</html>
+  saveS
