@@ -1402,7 +1402,6 @@ function renderRadar(filter = 'all') {
   const tierColor = { A: '#1a5235', B: '#0A3A6A', C: '#7A5800' };
   const customRadar = S.customRadar || [];
   const allRadar = [...data, ...customRadar.filter(c => filter==='all' || c.tier===filter)];
-  const data = RADAR; // reference for custom index calculation
   document.getElementById('radar-grid').innerHTML = allRadar.map((r,idx) => {
     const isCustom = !!r._custom;
     const cp = S.prices[r.ticker];
@@ -1440,13 +1439,13 @@ function renderRadar(filter = 'all') {
          </div>`
       : '';
     const deleteBtn = isCustom
-      ? `<button class="btn btn-danger btn-sm" style="margin-top:8px" onclick="deleteCustomRadar(${idx - data.length})">✕ Eliminar</button>`
+      ? `<button class="btn btn-danger btn-sm" style="margin-top:8px" onclick="deleteCustomRadar(${(S.customRadar||[]).indexOf(r)})">✕ Eliminar</button>`
       : '';
     return `<div class="radar-card${inZone?' in-zone':''}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <span class="tier-badge tier-${r.tier}">Tier ${r.tier}${isCustom?' · Custom':''}</span>
         <div style="display:flex;gap:4px">
-          ${isCustom?`<button class="btn btn-ghost btn-sm" onclick="editCustomRadar(${idx-data.length})" style="font-size:10px">✎</button>`:''}
+          ${isCustom?`<button class="btn btn-ghost btn-sm" onclick="editCustomRadar(${(S.customRadar||[]).indexOf(r)})" style="font-size:10px">✎</button>`:''}
           <button class="btn btn-ghost btn-sm" onclick="hideRadar('${r.ticker}')" style="font-size:11px;color:var(--ink3)" title="Ocultar empresa">✕</button>
         </div>
       </div>
