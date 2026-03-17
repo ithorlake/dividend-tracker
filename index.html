@@ -49,7 +49,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--i
 @keyframes fi{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
 
 /* FX STRIP */
-.fx-strip{display:flex;align-items:center;gap:14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rsm);padding:8px 16px;margin:10px 20px 0;font-size:11px;color:var(--ink3);flex-wrap:wrap}
+.fx-strip{display:flex;align-items:center;justify-content:center;gap:14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rsm);padding:8px 16px;margin:10px 20px 0;font-size:11px;color:var(--ink3);flex-wrap:wrap}
 .fx-val{font-family:var(--mono);color:var(--ink2);font-weight:500}
 
 /* CARDS */
@@ -223,7 +223,16 @@ table.tbl tr:hover td{background:var(--bg3)}
 <div id="tab-dashboard" class="panel active">
   <div class="abar">
     <div class="abar-title">Resumen de cartera</div>
-    <div style="font-size:12px;color:var(--ink3)" id="dash-date">—</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <!-- Currency toggle -->
+      <div style="display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:3px 4px">
+        <button id="toggle-eur" onclick="setCurrency('EUR')"
+          style="padding:3px 12px;border-radius:16px;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:var(--font);background:var(--accentL);color:#fff;transition:all .2s">€ EUR</button>
+        <button id="toggle-usd" onclick="setCurrency('USD')"
+          style="padding:3px 12px;border-radius:16px;border:none;cursor:pointer;font-size:12px;font-weight:500;font-family:var(--font);background:none;color:var(--ink3);transition:all .2s">$ USD</button>
+      </div>
+      <div style="font-size:12px;color:var(--ink3)" id="dash-date">—</div>
+    </div>
   </div>
   <div class="grid4" style="margin-bottom:12px">
     <div class="card-sm card-accent"><div class="kpi-label">NAV total (acc. + efectivo)</div><div class="kpi-val" id="kpi-nav">€0</div><div class="kpi-sub" id="kpi-val-sub">0 posiciones</div></div>
@@ -300,7 +309,20 @@ table.tbl tr:hover td{background:var(--bg3)}
     <div class="abar-title">Posiciones actuales</div>
     <button class="btn btn-primary" onclick="openTradeForm('BUY')">+ Nueva compra</button>
   </div>
-  <div class="card"><div id="pos-table"></div></div>
+  <div id="price-staleness-banner" style="display:none" class="banner banner-warn" style="margin-bottom:12px">
+    <span id="price-staleness-msg">⚠ Algunos precios llevan más de 7 días sin actualizar.</span>
+    <button class="btn btn-ghost btn-sm" onclick="refreshPricesAuto()" style="color:var(--goldL);border-color:var(--goldL)">↻ Actualizar precios</button>
+  </div>
+  <div class="card">
+    <div id="pos-table"></div>
+    <div style="display:flex;gap:16px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border2);flex-wrap:wrap">
+      <span style="font-size:11px;color:var(--ink3)">Indicadores de precio:</span>
+      <span style="font-size:11px;color:var(--accentL)">⟳ Auto (Yahoo Finance)</span>
+      <span style="font-size:11px;color:var(--goldL)">✎ Manual reciente (&lt;7 días)</span>
+      <span style="font-size:11px;color:var(--redL)">⚠ Manual desactualizado (&gt;7 días)</span>
+      <span style="font-size:11px;color:var(--ink3)">? Sin precio asignado</span>
+    </div>
+  </div>
 </div>
 
 <!-- ══════════ OPERACIONES ══════════ -->
@@ -386,11 +408,12 @@ table.tbl tr:hover td{background:var(--bg3)}
     <div class="abar-title">Empresas en vigilancia</div>
     <button class="btn btn-primary" onclick="openAddRadarForm()">+ Añadir empresa</button>
   </div>
-  <div class="filter-row">
-    <button class="pill active" onclick="filterRadar('all',this)">Todas (49)</button>
+  <div class="filter-row" id="radar-filter-row">
+    <button class="pill active" onclick="filterRadar('all',this)">Todas (<span id="radar-count">49</span>)</button>
     <button class="pill" onclick="filterRadar('A',this)">Tier A</button>
     <button class="pill" onclick="filterRadar('B',this)">Tier B</button>
     <button class="pill" onclick="filterRadar('C',this)">Tier C</button>
+    <button class="pill" id="pill-hidden" onclick="filterRadar('hidden',this)" style="display:none;border-color:var(--redL);color:var(--redL)">Ocultas (<span id="hidden-count">0</span>)</button>
   </div>
   <div class="radar-grid" id="radar-grid"></div>
 </div>
@@ -735,7 +758,9 @@ let S = {
   goal: 1500,
   customRadar: [],
   navHistory: [],
-  posMeta: {}
+  posMeta: {},
+  hiddenRadar: [],
+  priceDates: {}
 };
 let importBuffer = [];
 
@@ -816,6 +841,57 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 // ════════════════════════════════════════════
 // POSITIONS
 // ════════════════════════════════════════════
+function getPriceStaleness(ticker, currency) {
+  // Returns: 'auto' | 'manual-fresh' | 'manual-old' | 'never'
+  const autoable = ['USD','CAD'].includes(currency);
+  const priceDates = S.priceDates || {};
+  if (!S.prices[ticker]) return 'never';
+  if (autoable) return 'auto'; // refreshes via Yahoo
+  const dateStr = priceDates[ticker];
+  if (!dateStr) return 'manual-old';
+  const daysSince = Math.floor((new Date() - new Date(dateStr)) / (1000*60*60*24));
+  return daysSince <= 7 ? 'manual-fresh' : 'manual-old';
+}
+
+// ── Currency display toggle ──
+let displayCurrency = 'EUR'; // 'EUR' | 'USD'
+
+function setCurrency(cur) {
+  displayCurrency = cur;
+  // Update toggle button styles
+  const eurBtn = document.getElementById('toggle-eur');
+  const usdBtn = document.getElementById('toggle-usd');
+  if (eurBtn && usdBtn) {
+    if (cur === 'EUR') {
+      eurBtn.style.background = 'var(--accentL)'; eurBtn.style.color = '#fff'; eurBtn.style.fontWeight = '600';
+      usdBtn.style.background = 'none'; usdBtn.style.color = 'var(--ink3)'; usdBtn.style.fontWeight = '500';
+    } else {
+      usdBtn.style.background = 'var(--accentL)'; usdBtn.style.color = '#fff'; usdBtn.style.fontWeight = '600';
+      eurBtn.style.background = 'none'; eurBtn.style.color = 'var(--ink3)'; eurBtn.style.fontWeight = '500';
+    }
+  }
+  renderDashboard();
+}
+
+function formatAmount(eurAmount) {
+  // Convert EUR amount to display currency
+  if (displayCurrency === 'USD') {
+    const usdRate = S.fx.USD || 0.919;
+    const usd = eurAmount / usdRate;
+    return '$' + Math.round(usd).toLocaleString('es-ES');
+  }
+  return '€' + Math.round(eurAmount).toLocaleString('es-ES');
+}
+
+function formatAmountDecimals(eurAmount, dec=2) {
+  if (displayCurrency === 'USD') {
+    const usdRate = S.fx.USD || 0.919;
+    const usd = eurAmount / usdRate;
+    return '$' + usd.toFixed(dec);
+  }
+  return '€' + eurAmount.toFixed(dec);
+}
+
 function calcRealisedPnL() {
   // Match sells to buys (FIFO simplified) for closed positions
   let realised = 0;
@@ -898,30 +974,32 @@ function renderDashboard() {
   // Historical dividends
   const totalDivHist = S.dividends.reduce((s,d) => s + toEur(d.amount*(1-d.tax/100),d.currency), 0);
 
-  document.getElementById('kpi-nav').textContent = fe(nav);
-  document.getElementById('kpi-val-sub').textContent = pos.length + ' posición' + (pos.length !== 1 ? 'es' : '') + ' + efectivo';
+  const sym = displayCurrency === 'USD' ? '$' : '€';
+  document.getElementById('kpi-nav').textContent = formatAmount(nav);
+  document.getElementById('kpi-val-sub').textContent = pos.length + ' posición' + (pos.length !== 1 ? 'es' : '') + ' + efectivo · en ' + sym;
   const twrEl = document.getElementById('kpi-twr');
   twrEl.textContent = (totalReturn >= 0 ? '+' : '') + fn(totalReturn, 2) + '%';
   twrEl.className = 'kpi-val ' + (totalReturn >= 0 ? 'up' : 'dn');
-  document.getElementById('kpi-twr-sub').textContent = 'P&L: ' + fe(pnl + realisedPnl);
-  document.getElementById('kpi-divyr').textContent = fe(totalDiv);
+  document.getElementById('kpi-twr-sub').textContent = 'P&L: ' + formatAmount(pnl + realisedPnl);
+  document.getElementById('kpi-divyr').textContent = formatAmount(totalDiv);
   document.getElementById('kpi-yield-med').textContent = 'Yield: ' + fn(yieldMed, 1) + '%';
-  document.getElementById('kpi-divmo').textContent = fe(divMo);
-  document.getElementById('kpi-inv').textContent = fe(totalCost);
+  document.getElementById('kpi-divmo').textContent = formatAmount(divMo);
+  document.getElementById('kpi-inv').textContent = formatAmount(totalCost);
   const pnlEl = document.getElementById('kpi-pnl');
-  pnlEl.textContent = 'P&L no realizado: ' + fe(pnl) + ' (' + fn(pnlPct,1) + '%)';
+  pnlEl.textContent = 'P&L no realizado: ' + formatAmount(pnl) + ' (' + fn(pnlPct,1) + '%)';
   pnlEl.className = 'kpi-sub ' + (pnl >= 0 ? 'up' : 'dn');
-  document.getElementById('kpi-div-hist').textContent = fe(totalDivHist);
+  document.getElementById('kpi-div-hist').textContent = formatAmount(totalDivHist);
   document.getElementById('kpi-div-hist-sub').innerHTML = 'en <span id="kpi-div-count">' + S.dividends.length + '</span> cobros';
 
   // Progress
   document.getElementById('prog-pct').textContent = prog + '%';
   document.getElementById('prog-bar').style.width = prog + '%';
-  document.getElementById('prog-actual').textContent = fe(divMo) + '/mes actual';
-  document.getElementById('prog-goal').textContent = '€' + goal.toLocaleString('es-ES') + '/mes';
-  document.getElementById('goal-display').textContent = '€' + goal.toLocaleString('es-ES');
+  document.getElementById('prog-actual').textContent = formatAmount(divMo) + '/mes actual';
+  document.getElementById('prog-goal').textContent = formatAmount(goal) + '/mes';
+  document.getElementById('goal-display').textContent = formatAmount(goal);
 
-  if(document.getElementById('kpi-val')) document.getElementById('kpi-val').textContent = fe(totalVal);
+  if(document.getElementById('kpi-val')) document.getElementById('kpi-val').textContent = formatAmount(totalVal);
+  // Cash strip always shows original currencies (more informative)
   if(document.getElementById('kpi-cash-eur')) document.getElementById('kpi-cash-eur').textContent = '€' + (cash.EUR||0).toLocaleString('es-ES');
   if(document.getElementById('kpi-cash-usd')) document.getElementById('kpi-cash-usd').textContent = '$' + fn(cash.USD||0,2);
   if(document.getElementById('kpi-cash-pln')) document.getElementById('kpi-cash-pln').textContent = 'zł' + fn(cash.PLN||0,2);
@@ -1011,6 +1089,23 @@ function renderPositions() {
     return;
   }
   const sym = c => FX_SYM[c] || '';
+
+  // Check for stale prices and show/hide banner
+  const stalePositions = pos.filter(p => {
+    const st = getPriceStaleness(p.ticker, p.currency);
+    return st === 'manual-old' || st === 'never';
+  });
+  const stalenessEl = document.getElementById('price-staleness-banner');
+  const stalenessMsg = document.getElementById('price-staleness-msg');
+  if (stalenessEl) {
+    if (stalePositions.length > 0) {
+      const tickers = stalePositions.map(p => p.ticker).join(', ');
+      stalenessEl.style.display = 'flex';
+      if (stalenessMsg) stalenessMsg.textContent = '⚠ Precios desactualizados (>7 días): ' + tickers + '. Actualiza manualmente para un P&L preciso.';
+    } else {
+      stalenessEl.style.display = 'none';
+    }
+  }
   // Dividend growth: compare current divAnnual vs divAnnual at first purchase
   const firstBuyDiv = {};
   S.trades.filter(t=>t.type==='BUY').forEach(t => {
@@ -1047,7 +1142,17 @@ function renderPositions() {
       <td><span class="badge b-gray">${p.sector}</span></td>
       <td class="num">${fn(p.shares, 4)}</td>
       <td class="num">${sym(p.currency)}${fn(avg, 2)}</td>
-      <td class="num">${sym(p.currency)}${fn(cp, 2)}</td>
+      <td class="num">
+        ${sym(p.currency)}${fn(cp, 2)}
+        ${(()=>{
+          const st = getPriceStaleness(p.ticker, p.currency);
+          if (st==='auto') return '<span title="Precio automático (Yahoo Finance)" style="font-size:9px;color:var(--accentL);margin-left:3px">⟳</span>';
+          if (st==='manual-fresh') return '<span title="Precio manual — actualizado esta semana" style="font-size:9px;color:var(--goldL);margin-left:3px">✎</span>';
+          if (st==='manual-old') return '<span title="Precio manual no actualizado (más de 7 días)" style="font-size:9px;color:var(--redL);margin-left:3px;animation:pulse 2s infinite;display:inline-block">⚠</span>';
+          if (st==='never') return '<span title="Sin precio — usando precio de coste" style="font-size:9px;color:var(--ink3);margin-left:3px">?</span>';
+          return '';
+        })()}
+      </td>
       <td class="num ${pnl >= 0 ? 'up' : 'dn'}">${fe(pnl)}<br><span style="font-size:11px">(${fn(pnlPct, 1)}%)</span></td>
       <td class="num">${fe(divEur)}</td>
       <td class="num" style="color:var(--accentL)">${fn(yoc, 2)}%</td>
@@ -1297,6 +1402,7 @@ function renderRadar(filter = 'all') {
   const tierColor = { A: '#1a5235', B: '#0A3A6A', C: '#7A5800' };
   const customRadar = S.customRadar || [];
   const allRadar = [...data, ...customRadar.filter(c => filter==='all' || c.tier===filter)];
+  const data = RADAR; // reference for custom index calculation
   document.getElementById('radar-grid').innerHTML = allRadar.map((r,idx) => {
     const isCustom = !!r._custom;
     const cp = S.prices[r.ticker];
@@ -1339,7 +1445,10 @@ function renderRadar(filter = 'all') {
     return `<div class="radar-card${inZone?' in-zone':''}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <span class="tier-badge tier-${r.tier}">Tier ${r.tier}${isCustom?' · Custom':''}</span>
-        ${isCustom?`<button class="btn btn-ghost btn-sm" onclick="editCustomRadar(${idx-data.length})" style="font-size:10px">✎</button>`:''}
+        <div style="display:flex;gap:4px">
+          ${isCustom?`<button class="btn btn-ghost btn-sm" onclick="editCustomRadar(${idx-data.length})" style="font-size:10px">✎</button>`:''}
+          <button class="btn btn-ghost btn-sm" onclick="hideRadar('${r.ticker}')" style="font-size:11px;color:var(--ink3)" title="Ocultar empresa">✕</button>
+        </div>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:8px">
         <div style="flex:1">
@@ -1846,6 +1955,9 @@ async function refreshPricesAuto() {
   const allEurFailed = [...new Set([...eurStocks.map(p=>p), ...radarEurTickers])];
   if (allEurFailed.length) failed.push(...allEurFailed.filter(t => !failed.includes(t)));
   
+  const today = new Date().toISOString().split('T')[0];
+  if (!S.priceDates) S.priceDates = {};
+  allUsTickers.forEach(t => { if (S.prices[t]) S.priceDates[t] = today; });
   S.priceDate = new Date().toLocaleDateString('es-ES');
   saveNavSnapshot();
   saveState();
@@ -1886,6 +1998,9 @@ function saveQuickPrices() {
     const val = parseFloat(document.getElementById('qp-' + t)?.value);
     if (val > 0) S.prices[t] = val;
   });
+  const todayQ = new Date().toISOString().split('T')[0];
+  if (!S.priceDates) S.priceDates = {};
+  tickers.forEach(t => { if (S.prices[t]) S.priceDates[t] = todayQ; });
   S.priceDate = new Date().toLocaleDateString('es-ES');
   saveNavSnapshot();
   saveState();
@@ -2045,6 +2160,30 @@ function deleteCustomRadar(idx) {
   renderRadar();
   toast('Empresa eliminada del radar');
 }
+function hideRadar(ticker) {
+  if (!S.hiddenRadar) S.hiddenRadar = [];
+  if (!S.hiddenRadar.includes(ticker)) {
+    S.hiddenRadar.push(ticker);
+    saveState();
+    renderRadar();
+    toast(ticker + ' ocultada del radar · Ver "Ocultas" para recuperar');
+  }
+}
+
+function unhideRadar(ticker) {
+  if (!S.hiddenRadar) return;
+  S.hiddenRadar = S.hiddenRadar.filter(t => t !== ticker);
+  saveState();
+  renderRadar('hidden');
+  // If no more hidden, switch to all
+  if (S.hiddenRadar.length === 0) {
+    document.querySelectorAll('.filter-row .pill').forEach(p => p.classList.remove('active'));
+    document.querySelector('.filter-row .pill').classList.add('active');
+    renderRadar('all');
+  }
+  toast(ticker + ' restaurada al radar');
+}
+
 function saveRadarCompany() {
   const company = {
     ticker: document.getElementById('r-ticker').value.toUpperCase().trim(),
