@@ -5,182 +5,188 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DividendTrack — Mi Cartera</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --ink:#0D0D0D;--ink2:#444;--ink3:#777;--ink4:#bbb;
-  --surface:#ffffff;--surface2:#f6f5f1;--surface3:#eeedea;
-  --accent:#2A6B4F;--accent2:#1a4a35;--gold:#B8860B;
-  --red:#c0392b;--green:#27ae60;--blue:#1a5276;
-  --border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.05);
-  --mono:'Courier New',Courier,monospace;
-  --font:'Georgia','Times New Roman',serif;
+  --bg:#0D0D0D;--bg2:#141414;--bg3:#1C1C1C;--bg4:#252525;
+  --ink:#E8E3DA;--ink2:#A8A098;--ink3:#5E5A55;--ink4:#322E2A;
+  --accent:#2A6B4F;--accent2:#1f523c;--accentL:#3A8B65;
+  --gold:#C8920A;--goldL:#DDA820;
+  --red:#C0392B;--redL:#E05040;--green:#27AE60;--greenL:#2ECC71;
+  --blue:#1A5276;--blueL:#2E86C1;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.04);
+  --mono:'DM Mono','Courier New',monospace;
+  --font:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;
+  --r:10px;--rsm:7px;
 }
-@media(prefers-color-scheme:dark){
-  :root{
-    --ink:#F0EDE6;--ink2:#bbb;--ink3:#777;--ink4:#444;
-    --surface:#141414;--surface2:#1e1e1e;--surface3:#252525;
-    --accent:#3A8B65;--accent2:#2A6B4F;--gold:#D4A020;
-    --red:#e74c3c;--green:#2ecc71;--blue:#3498db;
-    --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.04);
-  }
-}
-html,body{height:100%;font-family:var(--font);background:var(--surface3);color:var(--ink);font-size:14px;line-height:1.5}
+html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
 
-/* ── NAV ── */
-.nav{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;box-shadow:0 1px 4px rgba(0,0,0,.04)}
-.nav-inner{max-width:1140px;margin:0 auto;display:flex;align-items:center;padding:0 20px;gap:0}
-.nav-logo{font-size:15px;font-weight:500;color:var(--accent);padding:14px 20px 14px 0;border-right:1px solid var(--border);margin-right:4px;letter-spacing:.5px;white-space:nowrap}
-.nav-tabs{display:flex;gap:0;flex:1;overflow-x:auto;scrollbar-width:none}
+/* NAV */
+.nav{background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200}
+.nav-inner{max-width:1160px;margin:0 auto;display:flex;align-items:center;padding:0 20px}
+.nav-logo{font-size:14px;font-weight:600;color:var(--accentL);padding:13px 18px 13px 0;border-right:1px solid var(--border);margin-right:4px;letter-spacing:.5px;white-space:nowrap}
+.nav-logo span{color:var(--goldL)}
+.nav-tabs{display:flex;flex:1;overflow-x:auto;scrollbar-width:none}
 .nav-tabs::-webkit-scrollbar{display:none}
-.nav-tab{background:none;border:none;border-bottom:2px solid transparent;padding:14px 13px;cursor:pointer;font-family:var(--font);font-size:12px;color:var(--ink3);white-space:nowrap;transition:color .15s}
-.nav-tab:hover{color:var(--ink)}
-.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
-.nav-actions{display:flex;gap:8px;margin-left:auto;padding-left:12px}
-.btn-refresh{background:var(--accent);color:#fff;border:none;padding:7px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-family:var(--font);white-space:nowrap}
-.btn-refresh:hover{background:var(--accent2)}
-.btn-export{background:none;border:1px solid var(--border);color:var(--ink2);padding:7px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-family:var(--font)}
-.btn-export:hover{background:var(--surface2)}
+.nav-tab{background:none;border:none;border-bottom:2px solid transparent;padding:13px 12px;cursor:pointer;font-family:var(--font);font-size:12px;font-weight:500;color:var(--ink3);white-space:nowrap;transition:color .15s}
+.nav-tab:hover{color:var(--ink2)}
+.nav-tab.active{color:var(--accentL);border-bottom-color:var(--accentL)}
+.nav-actions{display:flex;gap:6px;margin-left:auto;padding-left:12px}
+.btn-nav{background:none;border:1px solid var(--border);color:var(--ink3);padding:6px 11px;border-radius:var(--rsm);cursor:pointer;font-size:11px;font-family:var(--font);font-weight:500;transition:all .15s;white-space:nowrap}
+.btn-nav:hover{border-color:var(--accentL);color:var(--accentL)}
+.btn-nav.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-nav.primary:hover{background:var(--accentL)}
 
-/* ── LAYOUT ── */
-.app{max-width:1140px;margin:0 auto;padding:0 0 80px}
-.panel{display:none;padding:24px 20px}
+/* LAYOUT */
+.app{max-width:1160px;margin:0 auto;padding:0 0 80px}
+.panel{display:none;padding:22px 20px;animation:fi .15s ease}
 .panel.active{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
 
-/* ── FX STRIP ── */
-.fx-strip{display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 16px;margin:12px 20px 0;font-size:12px;color:var(--ink3);flex-wrap:wrap}
-.fx-val{font-family:var(--mono);color:var(--ink);font-weight:500}
-.fx-sep{color:var(--border);margin:0 2px}
+/* FX STRIP */
+.fx-strip{display:flex;align-items:center;gap:14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rsm);padding:8px 16px;margin:10px 20px 0;font-size:11px;color:var(--ink3);flex-wrap:wrap}
+.fx-val{font-family:var(--mono);color:var(--ink2);font-weight:500}
 
-/* ── CARDS ── */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
-.card-sm{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.card-sm{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rsm);padding:13px 16px}
+.card-acc{border-left:3px solid var(--accentL)}
+.card-gold{border-left:3px solid var(--goldL)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-@media(max-width:720px){.grid4{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:1fr 1fr}}
-@media(max-width:500px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
 
-/* ── KPI ── */
-.kpi-label{font-size:10px;color:var(--ink3);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
-.kpi-val{font-size:24px;font-weight:500;font-family:var(--mono);color:var(--ink)}
+/* KPI */
+.kpi-label{font-size:10px;color:var(--ink3);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;font-weight:500}
+.kpi-val{font-size:22px;font-weight:600;font-family:var(--mono);color:var(--ink)}
 .kpi-sub{font-size:11px;color:var(--ink3);margin-top:3px}
-.up{color:var(--green)}.dn{color:var(--red)}
+.up{color:var(--greenL)}.dn{color:var(--redL)}
 
-/* ── SECTION TITLE ── */
-.stitle{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--ink3);margin:22px 0 10px}
+/* SECTION TITLE */
+.stitle{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--ink3);margin:20px 0 10px;font-weight:500}
 
-/* ── TABLE ── */
+/* TABLE */
 .tbl-wrap{overflow-x:auto}
-table.tbl{width:100%;border-collapse:collapse;font-size:13px;min-width:600px}
-table.tbl th{font-size:10px;color:var(--ink3);letter-spacing:1.5px;text-transform:uppercase;padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
+table.tbl th{font-size:10px;color:var(--ink3);letter-spacing:1.5px;text-transform:uppercase;padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);font-weight:500}
 table.tbl td{padding:9px 10px;border-bottom:1px solid var(--border2);vertical-align:middle}
 table.tbl tr:last-child td{border-bottom:none}
-table.tbl tr:hover td{background:var(--surface2)}
+table.tbl tr:hover td{background:var(--bg3)}
 .num{text-align:right;font-family:var(--mono)}
-.tkr{font-family:var(--mono);font-weight:500;color:var(--accent);font-size:13px}
+.tkr{font-family:var(--mono);font-weight:600;color:var(--accentL);font-size:13px}
 
-/* ── BADGE ── */
-.badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;font-family:var(--mono);white-space:nowrap}
-.b-green{background:rgba(39,174,96,.12);color:#1a7a44}
-.b-red{background:rgba(192,57,43,.12);color:#8B1A0A}
-.b-gold{background:rgba(184,134,11,.12);color:#7A5800}
-.b-blue{background:rgba(26,82,118,.12);color:#0A3A6A}
-.b-gray{background:var(--surface3);color:var(--ink3)}
-@media(prefers-color-scheme:dark){
-  .b-green{color:#4ade80}.b-red{color:#f87171}.b-gold{color:#fbbf24}.b-blue{color:#60a5fa}
-}
+/* BADGE */
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;font-family:var(--mono);font-weight:500;white-space:nowrap}
+.b-green{background:rgba(46,204,113,.12);color:var(--greenL)}
+.b-red{background:rgba(224,80,64,.12);color:var(--redL)}
+.b-gold{background:rgba(221,168,32,.12);color:var(--goldL)}
+.b-blue{background:rgba(46,134,193,.12);color:var(--blueL)}
+.b-gray{background:rgba(255,255,255,.06);color:var(--ink2)}
+.b-alert{background:rgba(46,204,113,.18);color:var(--greenL);border:1px solid rgba(46,204,113,.3);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.65}}
 
-/* ── PROGRESS ── */
-.prog-wrap{background:var(--surface3);border-radius:4px;height:6px;overflow:hidden}
-.prog-bar{height:100%;background:var(--accent);border-radius:4px;transition:width .5s ease}
+/* PROGRESS */
+.prog-wrap{background:var(--bg4);border-radius:4px;height:6px;overflow:hidden}
+.prog-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accentL));border-radius:4px;transition:width .6s ease}
 
-/* ── BUTTONS ── */
-.btn{padding:9px 20px;border-radius:6px;border:none;cursor:pointer;font-family:var(--font);font-size:13px;transition:all .15s}
+/* BUTTONS */
+.btn{padding:8px 18px;border-radius:var(--rsm);border:none;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:500;transition:all .15s}
 .btn-primary{background:var(--accent);color:#fff}
-.btn-primary:hover{background:var(--accent2)}
+.btn-primary:hover{background:var(--accentL)}
 .btn-ghost{background:none;border:1px solid var(--border);color:var(--ink2)}
-.btn-ghost:hover{background:var(--surface2)}
-.btn-danger{background:rgba(192,57,43,.08);color:var(--red);border:1px solid rgba(192,57,43,.15)}
-.btn-sm{padding:5px 11px;font-size:11px;border-radius:5px}
+.btn-ghost:hover{background:var(--bg3)}
+.btn-danger{background:rgba(224,80,64,.08);color:var(--redL);border:1px solid rgba(224,80,64,.2)}
+.btn-sm{padding:4px 10px;font-size:11px;border-radius:5px}
 .btn-row{display:flex;gap:10px;margin-top:20px;justify-content:flex-end;flex-wrap:wrap}
 
-/* ── ACTION BAR ── */
-.abar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
-.abar-title{font-size:18px;font-weight:500}
+/* ACTION BAR */
+.abar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.abar-title{font-size:18px;font-weight:600}
 
-/* ── MODAL ── */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;align-items:center;justify-content:center;padding:16px}
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:300;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px)}
 .overlay.open{display:flex}
-.modal{background:var(--surface);border-radius:12px;padding:28px;width:min(500px,100%);max-height:90vh;overflow-y:auto}
-.modal-title{font-size:16px;font-weight:500;margin-bottom:20px}
-.frow{margin-bottom:14px}
-.frow label{display:block;font-size:10px;color:var(--ink3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px}
-.frow input,.frow select,.frow textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:14px;background:var(--surface2);color:var(--ink)}
-.frow input:focus,.frow select:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:26px;width:min(520px,100%);max-height:90vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:600;margin-bottom:18px}
+.frow{margin-bottom:13px}
+.frow label{display:block;font-size:10px;color:var(--ink3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;font-weight:500}
+.frow input,.frow select,.frow textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--rsm);font-family:var(--font);font-size:14px;background:var(--bg3);color:var(--ink);transition:border-color .15s}
+.frow input:focus,.frow select:focus,.frow textarea:focus{outline:none;border-color:var(--accentL)}
+.frow select option{background:var(--bg3)}
 .fgrid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:480px){.fgrid2{grid-template-columns:1fr}}
-@media(max-width:600px){
-  .nav-logo{font-size:13px;padding:12px 12px 12px 0}
-  .nav-tab{padding:12px 9px;font-size:11px}
-  .nav-actions{gap:4px}
-  .btn-export,.btn-refresh{padding:6px 8px;font-size:11px}
-  .abar{flex-direction:column;align-items:flex-start}
-  .kpi-val{font-size:20px}
-  .panel{padding:16px 12px}
-  .fx-strip{padding:7px 12px;font-size:11px;gap:8px}
-  .modal{padding:20px 16px}
-  table.tbl{font-size:12px}
-  table.tbl th,table.tbl td{padding:6px 6px}
-}
 
-/* ── CALENDAR GRID ── */
-.cal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-.cal-item{border-radius:8px;padding:12px 14px;border:1px solid var(--border)}
-.cal-month{font-size:10px;color:var(--ink3);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
-.cal-amount{font-size:20px;font-family:var(--mono);font-weight:500}
+/* CALENDAR */
+.cal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px}
+.cal-item{border-radius:var(--rsm);padding:12px 14px;border:1px solid var(--border);background:var(--bg2)}
+.cal-month{font-size:10px;color:var(--ink3);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;font-weight:500}
+.cal-amount{font-size:20px;font-family:var(--mono);font-weight:600}
 .cal-stocks{font-size:11px;color:var(--ink3);margin-top:4px}
-.cal-now{background:rgba(42,107,79,.08);border-color:var(--accent);border-width:2px}
-.cal-future{background:var(--surface)}
+.cal-now{background:rgba(58,139,101,.1);border-color:var(--accentL);border-width:2px}
 
-/* ── RADAR ── */
-.radar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
-.radar-card{border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:13px 14px;background:var(--surface)}
-.tier-badge{font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:2px 8px;border-radius:10px;display:inline-block;margin-bottom:6px}
-.tier-A{background:rgba(42,107,79,.12);color:#1a5235}
-.tier-B{background:rgba(26,82,118,.12);color:#0A3A6A}
-.tier-C{background:rgba(184,134,11,.12);color:#7A5800}
-@media(prefers-color-scheme:dark){.tier-A{color:#4ade80}.tier-B{color:#60a5fa}.tier-C{color:#fbbf24}}
+/* RADAR */
+.radar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.radar-card{border:1px solid var(--border);border-radius:var(--r);padding:16px;background:var(--bg2);transition:border-color .2s,transform .15s;position:relative;overflow:hidden}
+.radar-card:hover{border-color:rgba(255,255,255,.12);transform:translateY(-1px)}
+.radar-card.in-zone{border-color:var(--accentL) !important;background:rgba(58,139,101,.07)}
+.radar-card.in-zone::before{content:'🎯 EN ZONA DE COMPRA';position:absolute;top:0;right:0;background:var(--accentL);color:#fff;font-size:9px;font-weight:600;padding:3px 10px;border-radius:0 var(--r) 0 6px;letter-spacing:.5px}
+.tier-badge{font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:2px 8px;border-radius:10px;display:inline-block;font-weight:600}
+.tier-A{background:rgba(58,139,101,.15);color:var(--accentL)}
+.tier-B{background:rgba(46,134,193,.15);color:var(--blueL)}
+.tier-C{background:rgba(221,168,32,.15);color:var(--goldL)}
 
-/* ── FILTER PILLS ── */
+/* FILTER PILLS */
 .filter-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-.pill{background:none;border:1px solid var(--border);border-radius:20px;padding:5px 14px;cursor:pointer;font-size:12px;font-family:var(--font);color:var(--ink3)}
-.pill:hover{border-color:var(--accent);color:var(--accent)}
+.pill{background:none;border:1px solid var(--border);border-radius:20px;padding:5px 14px;cursor:pointer;font-size:12px;font-family:var(--font);color:var(--ink3);font-weight:500;transition:all .15s}
+.pill:hover{border-color:var(--accentL);color:var(--accentL)}
 .pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
 
-/* ── EMPTY STATE ── */
-.empty{text-align:center;padding:40px 20px;color:var(--ink3)}
-.empty-ico{font-size:32px;margin-bottom:12px;opacity:.5}
-.empty p{margin-bottom:16px}
+/* EMPTY */
+.empty{text-align:center;padding:36px 20px;color:var(--ink3)}
+.empty-ico{font-size:28px;margin-bottom:10px;opacity:.35}
+.empty p{margin-bottom:16px;font-size:13px}
 
-/* ── IMPORT BOX ── */
-.import-zone{border:2px dashed var(--border);border-radius:10px;padding:30px;text-align:center;cursor:pointer;transition:border-color .2s}
-.import-zone:hover,.import-zone.drag{border-color:var(--accent);background:rgba(42,107,79,.04)}
+/* IMPORT ZONE */
+.import-zone{border:2px dashed var(--border);border-radius:var(--r);padding:30px;text-align:center;cursor:pointer;transition:all .2s}
+.import-zone:hover,.import-zone.drag{border-color:var(--accentL);background:rgba(58,139,101,.05)}
 .import-zone p{color:var(--ink3);margin-top:8px;font-size:13px}
 
-/* ── TOAST ── */
-.toast{position:fixed;bottom:24px;right:24px;background:var(--accent);color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;z-index:999;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none}
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:1px solid var(--border);color:var(--ink);padding:11px 18px;border-radius:var(--rsm);font-size:13px;z-index:999;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.5)}
 .toast.show{opacity:1;transform:translateY(0)}
 
-/* ── PROJ CHART ── */
-.proj-chart-wrap{position:relative;width:100%;height:260px}
+/* CHART WRAP */
+.chart-wrap{position:relative;width:100%;height:240px}
+
+/* BANNER */
+.banner{border-radius:var(--rsm);padding:10px 16px;margin-bottom:12px;font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.banner-warn{background:rgba(200,146,10,.07);border:1px solid rgba(200,146,10,.2);color:var(--goldL)}
+
+/* RESPONSIVE */
+@media(max-width:900px){.grid4{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){
+  .grid2,.grid3,.grid4{grid-template-columns:1fr 1fr}
+  .nav-tab{padding:11px 8px;font-size:11px}
+  .btn-nav{padding:5px 7px;font-size:10px}
+  .panel{padding:14px 12px}
+  .abar{flex-direction:column;align-items:flex-start}
+  .kpi-val{font-size:18px}
+  .modal{padding:18px 14px}
+  table.tbl{font-size:12px}
+  table.tbl th,table.tbl td{padding:6px 7px}
+}
+@media(max-width:400px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
 <nav class="nav">
   <div class="nav-inner">
-    <div class="nav-logo">◆ DividendTrack</div>
+    <div class="nav-logo">◆ Dividend<span>Track</span></div>
     <div class="nav-tabs">
       <button class="nav-tab active" onclick="showTab('dashboard')">Dashboard</button>
       <button class="nav-tab" onclick="showTab('positions')">Posiciones</button>
@@ -192,10 +198,9 @@ table.tbl tr:hover td{background:var(--surface2)}
       <button class="nav-tab" onclick="showTab('import')">Importar IB</button>
     </div>
     <div class="nav-actions">
-      <button class="btn-export" onclick="exportPDF()">⎙ PDF</button>
-      <button class="btn-export" onclick="exportData()">↓ Backup</button>
-      <button id="btn-refresh" class="btn-refresh" onclick="refreshPricesAuto()">↻ Refresh</button>
-      <button class="btn-refresh" style="background:var(--surface2);color:var(--ink2);border:1px solid var(--border)" onclick="openFxForm()">✎ FX</button>
+      <button class="btn-nav" onclick="exportData()">↓ Backup</button>
+      <button id="btn-refresh" class="btn-nav primary" onclick="refreshPricesAuto()">↻ Refresh</button>
+      <button class="btn-nav primary" style="background:var(--surface2);color:var(--ink2);border:1px solid var(--border)" onclick="openFxForm()">✎ FX</button>
     </div>
   </div>
 </nav>
@@ -221,10 +226,14 @@ table.tbl tr:hover td{background:var(--surface2)}
     <div style="font-size:12px;color:var(--ink3)" id="dash-date">—</div>
   </div>
   <div class="grid4" style="margin-bottom:12px">
-    <div class="card-sm"><div class="kpi-label">NAV total (acc. + efectivo)</div><div class="kpi-val" id="kpi-nav">€0</div><div class="kpi-sub" id="kpi-val-sub">0 posiciones</div></div>
+    <div class="card-sm card-accent"><div class="kpi-label">NAV total (acc. + efectivo)</div><div class="kpi-val" id="kpi-nav">€0</div><div class="kpi-sub" id="kpi-val-sub">0 posiciones</div></div>
+    <div class="card-sm"><div class="kpi-label">Rendimiento total</div><div class="kpi-val" id="kpi-twr" style="font-size:26px">0%</div><div class="kpi-sub" id="kpi-twr-sub">desde primera compra</div></div>
     <div class="card-sm"><div class="kpi-label">Dividendo anual est.</div><div class="kpi-val" id="kpi-divyr">€0</div><div class="kpi-sub" id="kpi-yield-med">Yield: 0%</div></div>
-    <div class="card-sm"><div class="kpi-label">Dividendo mensual est.</div><div class="kpi-val" id="kpi-divmo">€0</div><div class="kpi-sub">Objetivo: €1.500/mes</div></div>
+    <div class="card-sm"><div class="kpi-label">Dividendo mensual est.</div><div class="kpi-val" id="kpi-divmo">€0</div><div class="kpi-sub" id="kpi-divmo-sub">Objetivo: <span id="goal-display">€1.500</span>/mes</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
     <div class="card-sm"><div class="kpi-label">Capital invertido</div><div class="kpi-val" id="kpi-inv">€0</div><div class="kpi-sub" id="kpi-pnl">P&L: €0</div></div>
+    <div class="card-sm"><div class="kpi-label">Dividendos cobrados (total histórico)</div><div class="kpi-val" id="kpi-div-hist">€0</div><div class="kpi-sub" id="kpi-div-hist-sub">en <span id="kpi-div-count">0</span> cobros</div></div>
   </div>
   <!-- Cash strip -->
   <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
@@ -249,18 +258,22 @@ table.tbl tr:hover td{background:var(--surface2)}
     </div>
   </div>
 
-  <div id="fx-reminder" style="display:none;background:rgba(184,134,11,0.08);border:1px solid rgba(184,134,11,0.3);border-radius:8px;padding:10px 16px;margin-bottom:12px;font-size:12px;color:var(--gold);display:flex;justify-content:space-between;align-items:center">
+  <div id="fx-reminder" style="display:none;background:rgba(184,134,11,0.08);border:1px solid rgba(184,134,11,0.3);border-radius:8px;padding:10px 16px;margin-bottom:12px;font-size:12px;color:var(--goldL);display:flex;justify-content:space-between;align-items:center">
     <span>⚡ Tipos de cambio desactualizados. Actualiza para un NAV preciso.</span>
-    <button class="btn btn-ghost btn-sm" onclick="openFxForm()" style="color:var(--gold);border-color:var(--gold)">Actualizar FX</button>
+    <button class="btn btn-ghost btn-sm" onclick="openFxForm()" style="color:var(--goldL);border-color:var(--goldL)">Actualizar FX</button>
   </div>
-  <div class="card" style="margin-bottom:16px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <span style="font-size:13px;font-weight:500">Progreso hacia €1.500/mes</span>
-      <span style="font-family:var(--mono);color:var(--accent);font-size:13px" id="prog-pct">0%</span>
+  <div class="card" style="margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+      <span style="font-size:13px;font-weight:600">Progreso hacia objetivo mensual</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-family:var(--mono);color:var(--accentL);font-size:13px;font-weight:600" id="prog-pct">0%</span>
+        <button class="btn btn-ghost btn-sm" onclick="openGoalForm()" style="font-size:10px">✎ Objetivo</button>
+      </div>
     </div>
     <div class="prog-wrap"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
     <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--ink3)">
-      <span id="prog-actual">€0/mes</span><span>€1.500/mes</span>
+      <span id="prog-actual">€0/mes actual</span>
+      <span>Meta: <strong style="color:var(--ink2)" id="prog-goal">€1.500/mes</strong></span>
     </div>
   </div>
 
@@ -324,17 +337,18 @@ table.tbl tr:hover td{background:var(--surface2)}
   <div class="grid2" style="margin-bottom:18px;align-items:start">
     <div class="card">
       <div class="stitle">Parámetros</div>
+      <div class="frow"><label>Capital inicial (€) — actual si tienes posiciones</label><input type="number" id="p-capital0" value="0" min="0" oninput="calcProj()" placeholder="Deja 0 para usar valor real de cartera"></div>
       <div class="frow"><label>Aportación mensual (€)</label><input type="number" id="p-monthly" value="500" min="0" oninput="calcProj()"></div>
       <div class="frow">
-        <label>Yield medio esperado — <span id="p-yield-v" style="color:var(--accent);font-family:var(--mono)">4.5%</span></label>
+        <label>Yield medio esperado — <span id="p-yield-v" style="color:var(--accentL);font-family:var(--mono)">4.5%</span></label>
         <input type="range" id="p-yield" min="2" max="8" step="0.1" value="4.5" oninput="document.getElementById('p-yield-v').textContent=parseFloat(this.value).toFixed(1)+'%';calcProj()">
       </div>
       <div class="frow">
-        <label>Crecimiento dividendo anual — <span id="p-growth-v" style="color:var(--accent);font-family:var(--mono)">6.0%</span></label>
+        <label>Crecimiento dividendo anual — <span id="p-growth-v" style="color:var(--accentL);font-family:var(--mono)">6.0%</span></label>
         <input type="range" id="p-growth" min="2" max="12" step="0.5" value="6" oninput="document.getElementById('p-growth-v').textContent=parseFloat(this.value).toFixed(1)+'%';calcProj()">
       </div>
       <div class="frow">
-        <label>Horizonte — <span id="p-years-v" style="color:var(--accent);font-family:var(--mono)">15 años</span></label>
+        <label>Horizonte — <span id="p-years-v" style="color:var(--accentL);font-family:var(--mono)">15 años</span></label>
         <input type="range" id="p-years" min="5" max="30" step="1" value="15" oninput="document.getElementById('p-years-v').textContent=this.value+' años';calcProj()">
       </div>
       <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
@@ -347,7 +361,7 @@ table.tbl tr:hover td{background:var(--surface2)}
       <div class="stitle">Resultado al final del horizonte</div>
       <div class="grid2" style="gap:12px">
         <div><div class="kpi-label">Capital final</div><div class="kpi-val" id="p-cap-fin">€0</div></div>
-        <div><div class="kpi-label">Dividendo mensual</div><div class="kpi-val" id="p-div-fin" style="color:var(--accent)">€0</div></div>
+        <div><div class="kpi-label">Dividendo mensual</div><div class="kpi-val" id="p-div-fin" style="color:var(--accentL)">€0</div></div>
         <div><div class="kpi-label">€1.500/mes en año</div><div class="kpi-val" id="p-target" style="font-size:18px">—</div></div>
         <div><div class="kpi-label">Yield sobre coste final</div><div class="kpi-val" id="p-yoc" style="font-size:18px">0%</div></div>
       </div>
@@ -368,9 +382,12 @@ table.tbl tr:hover td{background:var(--surface2)}
 
 <!-- ══════════ RADAR ══════════ -->
 <div id="tab-radar" class="panel">
-  <div class="abar"><div class="abar-title">Empresas en vigilancia</div></div>
+  <div class="abar">
+    <div class="abar-title">Empresas en vigilancia</div>
+    <button class="btn btn-primary" onclick="openAddRadarForm()">+ Añadir empresa</button>
+  </div>
   <div class="filter-row">
-    <button class="pill active" onclick="filterRadar('all',this)">Todas (20)</button>
+    <button class="pill active" onclick="filterRadar('all',this)">Todas (50)</button>
     <button class="pill" onclick="filterRadar('A',this)">Tier A</button>
     <button class="pill" onclick="filterRadar('B',this)">Tier B</button>
     <button class="pill" onclick="filterRadar('C',this)">Tier C</button>
@@ -410,7 +427,7 @@ table.tbl tr:hover td{background:var(--surface2)}
   </div>
 
   <!-- JSON backup loader -->
-  <div class="card" style="margin-bottom:16px;border-color:var(--accent)">
+  <div class="card" style="margin-bottom:16px;border-color:var(--accentL)">
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
       <div style="flex:1;min-width:200px">
         <div style="font-size:13px;font-weight:500;margin-bottom:3px">Cargar backup JSON</div>
@@ -596,6 +613,87 @@ table.tbl tr:hover td{background:var(--surface2)}
 </div>
 </div>
 
+<!-- Goal form -->
+<div class="overlay" id="goal-overlay">
+<div class="modal">
+  <div class="modal-title">Objetivo de dividendo mensual</div>
+  <p style="font-size:12px;color:var(--ink3);margin-bottom:16px">Define cuánto quieres cobrar en dividendos cada mes. La barra de progreso y las proyecciones se ajustan a este objetivo.</p>
+  <div class="frow">
+    <label>Objetivo mensual (€)</label>
+    <input type="number" id="goal-input" min="100" step="50" placeholder="1500">
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px">
+    <button class="btn btn-ghost btn-sm" onclick="setGoalPreset(500)">€500</button>
+    <button class="btn btn-ghost btn-sm" onclick="setGoalPreset(1000)">€1.000</button>
+    <button class="btn btn-ghost btn-sm" onclick="setGoalPreset(1500)">€1.500</button>
+    <button class="btn btn-ghost btn-sm" onclick="setGoalPreset(3000)">€3.000</button>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="closeModal('goal-overlay')">Cancelar</button>
+    <button class="btn btn-primary" onclick="saveGoal()">Guardar objetivo</button>
+  </div>
+</div>
+</div>
+
+<!-- Add/Edit Radar company -->
+<div class="overlay" id="radar-overlay">
+<div class="modal">
+  <div class="modal-title" id="radar-modal-title">Añadir empresa al radar</div>
+  <input type="hidden" id="radar-edit-idx" value="-1">
+  <div class="fgrid2">
+    <div class="frow"><label>Ticker</label><input type="text" id="r-ticker" placeholder="MSFT" oninput="this.value=this.value.toUpperCase()"></div>
+    <div class="frow"><label>Nombre</label><input type="text" id="r-name" placeholder="Microsoft Corp"></div>
+  </div>
+  <div class="fgrid2">
+    <div class="frow"><label>País</label><input type="text" id="r-country" placeholder="🇺🇸"></div>
+    <div class="frow"><label>Sector</label>
+      <select id="r-sector">
+        <option>Consumer Staples</option><option>Healthcare</option><option>REIT</option>
+        <option>Utilities</option><option>Energía</option><option>Industrial</option>
+        <option>Financiero</option><option>Tecnología</option><option>Bebidas/Spirits</option><option>Otro</option>
+      </select>
+    </div>
+  </div>
+  <div class="fgrid2">
+    <div class="frow"><label>Yield aprox. (%)</label><input type="text" id="r-yield" placeholder="3.5%"></div>
+    <div class="frow"><label>Frecuencia pago</label>
+      <select id="r-freq">
+        <option value="Mensual">Mensual</option>
+        <option value="Trimestral" selected>Trimestral</option>
+        <option value="Semestral">Semestral</option>
+        <option value="Anual">Anual</option>
+      </select>
+    </div>
+  </div>
+  <div class="fgrid2">
+    <div class="frow"><label>Años de dividendo creciente</label><input type="number" id="r-streak" placeholder="10" min="0"></div>
+    <div class="frow"><label>Tier</label>
+      <select id="r-tier">
+        <option value="A">A — Alta convicción</option>
+        <option value="B" selected>B — Estudiar</option>
+        <option value="C">C — Con cautela</option>
+      </select>
+    </div>
+  </div>
+  <div class="fgrid2">
+    <div class="frow"><label>Precio objetivo de compra</label><input type="number" id="r-target" placeholder="0.00" step="0.01"></div>
+    <div class="frow"><label>Moneda precio objetivo</label>
+      <select id="r-currency">
+        <option value="$">USD $</option><option value="€">EUR €</option>
+        <option value="£">GBP £</option><option value="C$">CAD C$</option>
+      </select>
+    </div>
+  </div>
+  <div class="frow"><label>Nota / tesis de inversión</label>
+    <textarea id="r-note" style="height:70px;resize:vertical" placeholder="Por qué la sigues, qué catalizador esperas…"></textarea>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="closeModal('radar-overlay')">Cancelar</button>
+    <button class="btn btn-primary" onclick="saveRadarCompany()">Guardar empresa</button>
+  </div>
+</div>
+</div>
+
 <!-- Cash form -->
 <div class="overlay" id="cash-overlay">
 <div class="modal">
@@ -633,7 +731,11 @@ let S = {
   fx: { USD: 0.919, GBP: 1.164, CAD: 0.672, PLN: 0.234 },
   fxDate: '',
   prices: {},
-  cash: { EUR: 0, USD: 0, GBP: 0, PLN: 0 }
+  cash: { EUR: 0, USD: 0, GBP: 0, PLN: 0 },
+  goal: 1500,
+  customRadar: [],
+  navHistory: [],
+  posMeta: {}
 };
 let importBuffer = [];
 
@@ -714,6 +816,28 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 // ════════════════════════════════════════════
 // POSITIONS
 // ════════════════════════════════════════════
+function calcRealisedPnL() {
+  // Match sells to buys (FIFO simplified) for closed positions
+  let realised = 0;
+  const buyMap = {};
+  const sorted = [...S.trades].sort((a,b) => new Date(a.date)-new Date(b.date));
+  sorted.forEach(t => {
+    if (!buyMap[t.ticker]) buyMap[t.ticker] = [];
+    if (t.type === 'BUY') {
+      buyMap[t.ticker].push({ shares: t.shares, price: t.price, currency: t.currency });
+    } else {
+      // SELL — calculate gain vs average cost
+      const buys = buyMap[t.ticker] || [];
+      const totalBuyShares = buys.reduce((s,b) => s+b.shares, 0);
+      if (totalBuyShares > 0) {
+        const avgBuy = buys.reduce((s,b) => s+b.price*b.shares, 0) / totalBuyShares;
+        realised += toEur((t.price - avgBuy) * t.shares, t.currency);
+      }
+    }
+  });
+  return realised;
+}
+
 function getPositions() {
   const map = {};
   S.trades.forEach(t => {
@@ -757,26 +881,50 @@ function renderDashboard() {
   const cash = S.cash || {};
   const cashEur = (cash.EUR||0) + toEur(cash.USD||0,'USD') + toEur(cash.GBP||0,'GBP') + toEur(cash.PLN||0,'PLN');
   const nav = totalVal + cashEur;
+  const goal = S.goal || 1500;
 
-  const divMo = totalDiv / 12;
+  // TWR — simple return: (current value - total invested) / total invested
   const pnl = totalVal - totalCost;
   const pnlPct = totalCost > 0 ? (pnl / totalCost * 100) : 0;
+
+  // Include realised PnL from closed trades
+  const realisedPnl = calcRealisedPnL();
+  const totalReturn = totalCost > 0 ? ((pnl + realisedPnl) / totalCost * 100) : 0;
+
+  const divMo = totalDiv / 12;
   const yieldMed = totalVal > 0 ? (totalDiv / totalVal * 100) : 0;
-  const prog = Math.min(100, Math.round(divMo / 1500 * 100));
+  const prog = Math.min(100, Math.round(divMo / goal * 100));
+
+  // Historical dividends
+  const totalDivHist = S.dividends.reduce((s,d) => s + toEur(d.amount*(1-d.tax/100),d.currency), 0);
 
   document.getElementById('kpi-nav').textContent = fe(nav);
   document.getElementById('kpi-val-sub').textContent = pos.length + ' posición' + (pos.length !== 1 ? 'es' : '') + ' + efectivo';
-  document.getElementById('kpi-val').textContent = fe(totalVal);
-  document.getElementById('kpi-cash-eur').textContent = '€' + (cash.EUR||0).toLocaleString('es-ES');
-  document.getElementById('kpi-cash-usd').textContent = '$' + fn(cash.USD||0,2);
-  document.getElementById('kpi-cash-pln').textContent = 'zł' + fn(cash.PLN||0,2);
+  const twrEl = document.getElementById('kpi-twr');
+  twrEl.textContent = (totalReturn >= 0 ? '+' : '') + fn(totalReturn, 2) + '%';
+  twrEl.className = 'kpi-val ' + (totalReturn >= 0 ? 'up' : 'dn');
+  document.getElementById('kpi-twr-sub').textContent = 'P&L: ' + fe(pnl + realisedPnl);
   document.getElementById('kpi-divyr').textContent = fe(totalDiv);
   document.getElementById('kpi-yield-med').textContent = 'Yield: ' + fn(yieldMed, 1) + '%';
   document.getElementById('kpi-divmo').textContent = fe(divMo);
   document.getElementById('kpi-inv').textContent = fe(totalCost);
   const pnlEl = document.getElementById('kpi-pnl');
-  pnlEl.textContent = 'P&L: ' + fe(pnl) + ' (' + fn(pnlPct, 1) + '%)';
+  pnlEl.textContent = 'P&L no realizado: ' + fe(pnl) + ' (' + fn(pnlPct,1) + '%)';
   pnlEl.className = 'kpi-sub ' + (pnl >= 0 ? 'up' : 'dn');
+  document.getElementById('kpi-div-hist').textContent = fe(totalDivHist);
+  document.getElementById('kpi-div-hist-sub').innerHTML = 'en <span id="kpi-div-count">' + S.dividends.length + '</span> cobros';
+
+  // Progress
+  document.getElementById('prog-pct').textContent = prog + '%';
+  document.getElementById('prog-bar').style.width = prog + '%';
+  document.getElementById('prog-actual').textContent = fe(divMo) + '/mes actual';
+  document.getElementById('prog-goal').textContent = '€' + goal.toLocaleString('es-ES') + '/mes';
+  document.getElementById('goal-display').textContent = '€' + goal.toLocaleString('es-ES');
+
+  if(document.getElementById('kpi-val')) document.getElementById('kpi-val').textContent = fe(totalVal);
+  if(document.getElementById('kpi-cash-eur')) document.getElementById('kpi-cash-eur').textContent = '€' + (cash.EUR||0).toLocaleString('es-ES');
+  if(document.getElementById('kpi-cash-usd')) document.getElementById('kpi-cash-usd').textContent = '$' + fn(cash.USD||0,2);
+  if(document.getElementById('kpi-cash-pln')) document.getElementById('kpi-cash-pln').textContent = 'zł' + fn(cash.PLN||0,2);
   document.getElementById('prog-pct').textContent = prog + '%';
   document.getElementById('prog-bar').style.width = prog + '%';
   document.getElementById('prog-actual').textContent = fe(divMo) + '/mes';
@@ -816,7 +964,7 @@ function renderDashboard() {
       const perPay = toEur(p.shares * p.divAnnual, p.currency) / (12 / mo);
       return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border2)">
         <div><span class="tkr">${p.ticker}</span> <span style="font-size:11px;color:var(--ink3)">${p.freq}</span></div>
-        <span style="font-family:var(--mono);color:var(--green);font-size:13px">${fe(perPay)}</span>
+        <span style="font-family:var(--mono);color:var(--greenL);font-size:13px">${fe(perPay)}</span>
       </div>`;
     }).join('');
   }
@@ -828,7 +976,7 @@ function renderDashboard() {
     const c = document.createElement('canvas'); c.id = 'distChart'; wrap.appendChild(c);
   }
   const data = [...pos].sort((a, b) => toEur(b.shares * b.divAnnual, b.currency) - toEur(a.shares * a.divAnnual, a.currency));
-  const cols = ['#2A6B4F','#1a5276','#B8860B','#7B241C','#5B2C6F','#117A65','#784212','#1a3a5c','#6c3483','#117864'];
+  const cols = ['#3A8B65','#2E86C1','#C8920A','#C0392B','#8E44AD','#1ABC9C','#E67E22','#2980B9','#9B59B6','#16A085'];
   if (distChartInst) { distChartInst.destroy(); }
   const ctx = document.getElementById('distChart');
   if (!ctx) return;
@@ -860,6 +1008,11 @@ function renderPositions() {
     return;
   }
   const sym = c => FX_SYM[c] || '';
+  // Dividend growth: compare current divAnnual vs divAnnual at first purchase
+  const firstBuyDiv = {};
+  S.trades.filter(t=>t.type==='BUY').forEach(t => {
+    if (!firstBuyDiv[t.ticker]) firstBuyDiv[t.ticker] = t.divAnnual || 0;
+  });
   const pm = S.posMeta || {};
   const rows = pos.map(p => {
     const avg = p.shares > 0 ? p.costTotal / p.shares : 0;
@@ -873,23 +1026,28 @@ function renderPositions() {
     const m = pm[p.ticker] || {};
     const dgiCls = m.dgi==='especulativa' ? 'b-red' : m.dgi==='transicion' ? 'b-gold' : 'b-green';
     const dgiTxt = m.dgi==='especulativa' ? 'ESPECULATIVA' : m.dgi==='transicion' ? 'TRANSICIÓN' : 'DGI';
+    const firstDiv = firstBuyDiv[p.ticker] || 0;
+    const divGrowthPct = firstDiv > 0 ? ((p.divAnnual - firstDiv) / firstDiv * 100) : 0;
+    const divGrowthStr = firstDiv > 0
+      ? `<span class="${divGrowthPct>=0?'up':'dn'}" style="font-size:10px;font-family:var(--mono)"> ${divGrowthPct>=0?'▲':'▼'}${Math.abs(divGrowthPct).toFixed(1)}% div.</span>`
+      : '';
     const extra = [
       m.target>0 ? `<div style="font-size:10px;color:var(--ink3)">🎯 ${sym(p.currency)}${m.target}</div>` : '',
-      m.notes ? `<div style="font-size:10px;color:var(--ink3);font-style:italic">${m.notes.slice(0,45)}…</div>` : ''
+      m.notes ? `<div style="font-size:10px;color:var(--ink3);font-style:italic">${m.notes.slice(0,40)}…</div>` : ''
     ].join('');
     return `<tr>
       <td>
         <span class="tkr">${p.ticker}</span>
         <div style="margin-top:3px"><span class="badge ${dgiCls}">${dgiTxt}</span></div>
       </td>
-      <td>${p.name}${extra}</td>
+      <td>${p.name}${divGrowthStr}${extra}</td>
       <td><span class="badge b-gray">${p.sector}</span></td>
       <td class="num">${fn(p.shares, 4)}</td>
       <td class="num">${sym(p.currency)}${fn(avg, 2)}</td>
       <td class="num">${sym(p.currency)}${fn(cp, 2)}</td>
       <td class="num ${pnl >= 0 ? 'up' : 'dn'}">${fe(pnl)}<br><span style="font-size:11px">(${fn(pnlPct, 1)}%)</span></td>
       <td class="num">${fe(divEur)}</td>
-      <td class="num" style="color:var(--accent)">${fn(yoc, 2)}%</td>
+      <td class="num" style="color:var(--accentL)">${fn(yoc, 2)}%</td>
       <td class="num">${fe(divEur / 12)}</td>
       <td><button class="btn btn-ghost btn-sm" onclick="openEditPosition('${p.ticker}')">✎</button></td>
     </tr>`;
@@ -911,6 +1069,11 @@ function renderTrades() {
   }
   const sorted = [...S.trades].sort((a, b) => new Date(b.date) - new Date(a.date));
   const sym = c => FX_SYM[c] || '';
+  // Dividend growth: compare current divAnnual vs divAnnual at first purchase
+  const firstBuyDiv = {};
+  S.trades.filter(t=>t.type==='BUY').forEach(t => {
+    if (!firstBuyDiv[t.ticker]) firstBuyDiv[t.ticker] = t.divAnnual || 0;
+  });
   const rows = sorted.map((t, i) => {
     const realIdx = S.trades.indexOf(t);
     return `<tr>
@@ -969,6 +1132,11 @@ function renderCalendar() {
     return;
   }
   const sym = c => FX_SYM[c] || '';
+  // Dividend growth: compare current divAnnual vs divAnnual at first purchase
+  const firstBuyDiv = {};
+  S.trades.filter(t=>t.type==='BUY').forEach(t => {
+    if (!firstBuyDiv[t.ticker]) firstBuyDiv[t.ticker] = t.divAnnual || 0;
+  });
   const sorted = [...S.dividends].sort((a, b) => new Date(b.date) - new Date(a.date));
   const rows = sorted.map((d, i) => {
     const neto = toEur(d.amount * (1 - d.tax / 100), d.currency);
@@ -994,7 +1162,8 @@ function renderCalendar() {
 let projChartInst = null;
 function calcProj() {
   const pos = getPositions();
-  let cap0 = pos.reduce((s, p) => s + toEur(p.costTotal, p.currency), 0);
+  let cap0 = parseFloat(document.getElementById('p-capital0')?.value) || 0;
+  if (cap0 === 0) cap0 = pos.reduce((s, p) => s + toEur(p.costTotal, p.currency), 0);
   const monthly = parseFloat(document.getElementById('p-monthly').value) || 0;
   const yld = parseFloat(document.getElementById('p-yield').value) / 100;
   const growth = parseFloat(document.getElementById('p-growth').value) / 100;
@@ -1010,7 +1179,7 @@ function calcProj() {
     const aDiv = cap * yld * gf;
     if (drip) cap += aDiv;
     const mDiv = Math.round(aDiv / 12);
-    if (!targetYear && mDiv >= 1500) targetYear = y;
+    if (!targetYear && mDiv >= (S.goal||1500)) targetYear = y;
     rows.push({ year: y, cap: Math.round(cap), aDiv: Math.round(aDiv), mDiv });
   }
   const last = rows[rows.length - 1];
@@ -1019,6 +1188,7 @@ function calcProj() {
   document.getElementById('p-cap-fin').textContent = fe(last.cap);
   document.getElementById('p-div-fin').textContent = fe(last.mDiv) + '/mes';
   document.getElementById('p-target').textContent = targetYear ? ('Año ' + targetYear) : ('>' + years + ' años');
+  document.getElementById('p-target').parentElement.querySelector('.kpi-label').textContent = '€' + (S.goal||1500).toLocaleString('es-ES') + '/mes en año';
   document.getElementById('p-yoc').textContent = fn(yoc, 1) + '%';
 
   // Chart
@@ -1028,7 +1198,7 @@ function calcProj() {
     type: 'bar',
     data: {
       labels: rows.map(r => 'Año ' + r.year),
-      datasets: [{ data: rows.map(r => r.mDiv), backgroundColor: rows.map(r => r.mDiv >= 1500 ? '#2A6B4F' : '#8DBBA8'), borderRadius: 3 }]
+      datasets: [{ data: rows.map(r => r.mDiv), backgroundColor: rows.map(r => r.mDiv >= (S.goal||1500) ? '#3A8B65' : '#1C4A35'), borderRadius: 3 }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
@@ -1042,8 +1212,8 @@ function calcProj() {
 
   // Table
   document.getElementById('p-tbody').innerHTML = rows.map(r => {
-    const pct = Math.min(100, Math.round(r.mDiv / 1500 * 100));
-    const hit = r.mDiv >= 1500 && (rows.indexOf(r) === 0 || rows[rows.indexOf(r) - 1].mDiv < 1500);
+    const pct = Math.min(100, Math.round(r.mDiv / (S.goal||1500) * 100));
+    const hit = r.mDiv >= (S.goal||1500) && (rows.indexOf(r) === 0 || rows[rows.indexOf(r) - 1].mDiv < (S.goal||1500));
     return `<tr style="${hit ? 'background:rgba(42,107,79,0.07)' : ''}">
       <td>${hit ? '🎯 ' : ''}Año ${r.year}</td>
       <td class="num">€${r.cap.toLocaleString('es-ES')}</td>
@@ -1085,28 +1255,105 @@ const RADAR = [
   {tier:'C',ticker:'BTI',name:'British Am. Tobacco',sector:'Tabaco',country:'🇬🇧',yield:'9.4%',freq:'Trimestral',note:'Yield muy alta. Vigilar trampa. ESG riesgo.',streak:20},
   {tier:'C',ticker:'REE',name:'Red Eléctrica',sector:'Utilities ES',country:'🇪🇸',yield:'5.2%',freq:'Semestral',note:'Infraestructura eléctrica española.',streak:20},
   {tier:'C',ticker:'VZ',name:'Verizon',sector:'Telecoms',country:'🇺🇸',yield:'6.8%',freq:'Trimestral',note:'Morningstar 4★. Oligopolio en maduración.',streak:18},
+  {tier:'B',ticker:'NESN',name:'Nestlé',sector:'Consumer Staples',country:'🇨🇭',yield:'3.8%',freq:'Anual',note:'Reestructuración activa. Agua, café (Nespresso), nutrición infantil. Bolsa SWX.',streak:25},
+  {tier:'C',ticker:'K',name:'Kellanova (Mars)',sector:'Consumer Staples',country:'🇺🇸',yield:'3.1%',freq:'Trimestral',note:'Kelloggs + Pringles + Pop-Tarts. Adquirida por Mars en 2024. Revisar estructura.',streak:20},
+  {tier:'A',ticker:'V',name:'Visa',sector:'Financiero',country:'🇺🇸',yield:'0.8%',freq:'Trimestral',note:'16 años subida dividendo. Yield mínima pero crece 15-20%/año. Wide moat absoluto.',streak:16},
+  {tier:'A',ticker:'BNS',name:'Bank of Nova Scotia',sector:'Banca',country:'🇨🇦',yield:'6.2%',freq:'Trimestral',note:'Big 6 canadiense. 45+ años dividendo. Alta yield. Exposición América Latina.',streak:45},
+  {tier:'B',ticker:'MMM',name:'3M',sector:'Industrial',country:'🇺🇸',yield:'2.1%',freq:'Trimestral',note:'65 años Dividend King. Post-reestructuración (escisión Solventum). Vigilar litigios.',streak:65},
+  {tier:'C',ticker:'BUD',name:'AB InBev',sector:'Bebidas/Spirits',country:'🇧🇪',yield:'1.5%',freq:'Semestral',note:'Reconstruye dividendo post-deuda. Budweiser, Corona, Stella. Deuda alta todavía.',streak:3},
+  // ── Consumer Staples (additional) ──
+  {tier:'A',ticker:'GIS',name:'General Mills',sector:'Consumer Staples',country:'🇺🇸',yield:'3.9%',freq:'Trimestral',note:'25+ años dividendo. Cereales, Haagen-Dazs, Pillsbury. Demanda inelástica.',streak:25},
+  {tier:'A',ticker:'CL',name:'Colgate-Palmolive',sector:'Consumer Staples',country:'🇺🇸',yield:'2.3%',freq:'Trimestral',note:'61 años Dividend King. 41% cuota global pasta dental. Pricing power real.',streak:61},
+  {tier:'A',ticker:'KMB',name:'Kimberly-Clark',sector:'Consumer Staples',country:'🇺🇸',yield:'3.5%',freq:'Trimestral',note:'54 años Dividend King. Huggies, Kleenex. Revisando estrategia.',streak:54},
+  {tier:'B',ticker:'PEP',name:'PepsiCo',sector:'Consumer Staples',country:'🇺🇸',yield:'3.5%',freq:'Trimestral',note:'52 años Dividend King. Snacks + bebidas. Frito-Lay aporta la mitad del beneficio.',streak:52},
+
+  // ── Healthcare (additional) ──
+  
+  {tier:'B',ticker:'BMY',name:'Bristol-Myers Squibb',sector:'Healthcare',country:'🇺🇸',yield:'4.5%',freq:'Trimestral',note:'Alta yield. Oncología y cardiología. Revisión pipeline post-patentes.',streak:15},
+  {tier:'B',ticker:'NOVOb',name:'Novo Nordisk',sector:'Healthcare',country:'🇩🇰',yield:'2.1%',freq:'Semestral',note:'Ozempic y Wegovy. Crecimiento extraordinario. Dividendo crece rápido.',streak:20},
+  
+
+  // ── Industrials (additional) ──
+  
+  {tier:'A',ticker:'EMR',name:'Emerson Electric',sector:'Industrial',country:'🇺🇸',yield:'1.9%',freq:'Trimestral',note:'67 años Dividend King. Automatización industrial. Moat en software industrial.',streak:67},
+  
+
+  // ── Technology ──
+  {tier:'B',ticker:'TXN',name:'Texas Instruments',sector:'Tecnología',country:'🇺🇸',yield:'3.2%',freq:'Trimestral',note:'21 años subida. Semiconductores analógicos — moat estructural alto.',streak:21},
+  {tier:'B',ticker:'MSFT',name:'Microsoft',sector:'Tecnología',country:'🇺🇸',yield:'0.8%',freq:'Trimestral',note:'22 años subida. Yield baja pero crece 10%+/año. Azure + IA tailwind.',streak:22},
+  {tier:'C',ticker:'AAPL',name:'Apple',sector:'Tecnología',country:'🇺🇸',yield:'0.5%',freq:'Trimestral',note:'12 años dividendo. Yield mínima — el valor es la recompra masiva + ecosistema.',streak:12},
+
+  // ── Financials / REITs ──
+  {tier:'A',ticker:'TD',name:'TD Bank',sector:'Banca',country:'🇨🇦',yield:'5.0%',freq:'Trimestral',note:'Big 6 canadiense. Post-multa regulatoria EEUU. Reconstruyendo confianza.',streak:25},
+  {tier:'B',ticker:'AXP',name:'American Express',sector:'Financiero',country:'🇺🇸',yield:'1.2%',freq:'Trimestral',note:'12+ años subida. Crecimiento dividendo fuerte. Premium consumer moat.',streak:12},
+  {tier:'B',ticker:'WPC',name:'W.P. Carey',sector:'REIT',country:'🇺🇸',yield:'6.2%',freq:'Trimestral',note:'REIT net-lease diversificado. Revisó política dividendo en 2023. Vigilar.',streak:10},
+  {tier:'B',ticker:'FAST',name:'Fastenal',sector:'Industrial',country:'🇺🇸',yield:'2.2%',freq:'Trimestral',note:'25+ años subida. Distribución industrial. Crecimiento dividendo consistente.',streak:25},
+
+  // ── Energy & Materials ──
+  {tier:'A',ticker:'XOM',name:'ExxonMobil',sector:'Energía',country:'🇺🇸',yield:'3.6%',freq:'Trimestral',note:'41 años Dividend Aristocrat. FCF muy alto. Pioneer acquisition añade escala.',streak:41},
+  {tier:'B',ticker:'SHEL',name:'Shell',sector:'Energía',country:'🇬🇧',yield:'4.1%',freq:'Trimestral',note:'Reconstruye track record post-2020. ADR NYSE. LNG + renovables.',streak:4},
+  {tier:'B',ticker:'LIN',name:'Linde',sector:'Materiales',country:'🇮🇪',yield:'1.4%',freq:'Trimestral',note:'30+ años dividendo. Gases industriales. Moat en infraestructura criogénica.',streak:30},
+  {tier:'C',ticker:'NTR',name:'Nutrien',sector:'Materiales',country:'🇨🇦',yield:'4.1%',freq:'Trimestral',note:'12+ años dividendo. Fertilizantes. Ciclo commodities — entrada táctica.',streak:12},
+
+  // ── Utilities (additional) ──
+  {tier:'A',ticker:'WEC',name:'WEC Energy',sector:'Utilities',country:'🇺🇸',yield:'3.5%',freq:'Trimestral',note:'22 años subida. Utility Midwest regulada. Crecimiento tarifa limpio.',streak:22},
+  {tier:'A',ticker:'AWR',name:'American States Water',sector:'Utilities',country:'🇺🇸',yield:'2.1%',freq:'Trimestral',note:'69 años Dividend King. La empresa cotizada con más años consecutivos de subida.',streak:69},
+  {tier:'B',ticker:'D',name:'Duke Energy',sector:'Utilities',country:'🇺🇸',yield:'3.6%',freq:'Trimestral',note:'Morningstar FV $131. Solo ligero descuento. Utility sudeste EEUU.',streak:18},
+  {tier:'C',ticker:'ENEL',name:'Enel',sector:'Utilities',country:'🇮🇹',yield:'6.1%',freq:'Semestral',note:'Gigante europeo renovables. Dividendo variable histórico — revisar política.',streak:15},
+
+  // ── Beverages / Consumer Discretionary ──
+  {tier:'B',ticker:'RI',name:'Pernod Ricard',sector:'Bebidas/Spirits',country:'🇫🇷',yield:'4.5%',freq:'Semestral',note:'Peer Diageo. Mumm, Jameson, Absolut. Revisar balance post-caída sector spirits.',streak:15},
+  {tier:'B',ticker:'HEI',name:'Heineken',sector:'Bebidas/Spirits',country:'🇳🇱',yield:'2.3%',freq:'Semestral',note:'Cerveza premium global. Crecimiento Asia + África. Dividendo moderado pero estable.',streak:15},
+  
+  
 ];
 
 function renderRadar(filter = 'all') {
   const data = filter === 'all' ? RADAR : RADAR.filter(r => r.tier === filter);
   const tierColor = { A: '#1a5235', B: '#0A3A6A', C: '#7A5800' };
-  document.getElementById('radar-grid').innerHTML = data.map(r => `
-    <div class="radar-card">
-      <div><span class="tier-badge tier-${r.tier}">Tier ${r.tier}</span></div>
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:4px">
-        <div>
-          <div style="font-size:15px;font-weight:500;font-family:var(--mono);color:var(--accent)">${r.ticker} <span style="font-size:11px;font-weight:400;font-family:var(--font);color:var(--ink3)">${r.country}</span></div>
-          <div style="font-size:13px;color:var(--ink2)">${r.name}</div>
-          <div style="font-size:11px;color:var(--ink3);margin-top:1px">${r.sector} · ${r.freq}</div>
+  const customRadar = S.customRadar || [];
+  const allRadar = [...data, ...customRadar.filter(c => filter==='all' || c.tier===filter)];
+  document.getElementById('radar-grid').innerHTML = allRadar.map((r,idx) => {
+    const isCustom = !!r._custom;
+    const cp = S.prices[r.ticker];
+    const target = parseFloat(r.targetPrice) || 0;
+    const inZone = target > 0 && cp > 0 && cp <= target;
+    const priceLine = target > 0
+      ? `<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--border2)">
+          <span style="font-size:10px;color:var(--ink3)">Precio objetivo</span>
+          <span style="font-family:var(--mono);font-size:12px;color:${inZone?'var(--accentL)':'var(--goldL)'}">${r.currency||'$'}${target} ${inZone?'✓':''}</span>
+         </div>`
+      : '';
+    const deleteBtn = isCustom
+      ? `<button class="btn btn-danger btn-sm" style="margin-top:8px" onclick="deleteCustomRadar(${idx - data.length})">✕ Eliminar</button>`
+      : '';
+    return `<div class="radar-card${inZone?' in-zone':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <span class="tier-badge tier-${r.tier}">Tier ${r.tier}${isCustom?' · Custom':''}</span>
+        ${isCustom?`<button class="btn btn-ghost btn-sm" onclick="editCustomRadar(${idx-data.length})" style="font-size:10px">✎</button>`:''}
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:8px">
+        <div style="flex:1">
+          <div style="display:flex;align-items:baseline;gap:6px">
+            <span style="font-size:16px;font-weight:700;font-family:var(--mono);color:var(--accentL)">${r.ticker}</span>
+            <span style="font-size:12px;color:var(--ink3)">${r.country||''}</span>
+          </div>
+          <div style="font-size:13px;color:var(--ink2);margin-top:2px;font-weight:500">${r.name}</div>
+          <div style="font-size:11px;color:var(--ink3);margin-top:2px">${r.sector} · ${r.freq}</div>
         </div>
-        <div style="text-align:right">
-          <div style="font-size:18px;font-weight:500;font-family:var(--mono);color:var(--green)">${r.yield}</div>
-          <div style="font-size:10px;color:var(--ink3)">${r.streak} años</div>
+        <div style="text-align:right;margin-left:12px">
+          <div style="font-size:20px;font-weight:700;font-family:var(--mono);color:var(--greenL)">${r.yield}</div>
+          <div style="font-size:10px;color:var(--ink3);margin-top:1px">${r.streak} años streak</div>
         </div>
       </div>
-      <div style="font-size:11px;color:var(--ink3);margin-top:8px;padding-top:8px;border-top:1px solid var(--border2);line-height:1.5">${r.note}</div>
-      <button class="btn btn-ghost btn-sm" style="margin-top:10px;width:100%" onclick="addFromRadar('${r.ticker}','${r.name}','${r.sector}')">+ Añadir posición</button>
-    </div>`).join('');
+      <div style="font-size:11px;color:var(--ink3);margin-top:10px;padding-top:8px;border-top:1px solid var(--border2);line-height:1.6">${r.note}</div>
+      ${priceLine}
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="addFromRadar('${r.ticker}','${r.name}','${r.sector}')">+ Posición</button>
+      </div>
+      ${deleteBtn}
+    </div>`;
+  }).join('');
 }
 
 let navChartInst = null, divHistChartInst = null;
@@ -1125,8 +1372,8 @@ function renderCharts() {
           labels: hist.map(h => h.date),
           datasets: [{
             data: hist.map(h => h.nav),
-            borderColor: '#2A6B4F',
-            backgroundColor: 'rgba(42,107,79,0.08)',
+            borderColor: '#3A8B65',
+            backgroundColor: 'rgba(58,139,101,0.12)',
             borderWidth: 2,
             pointRadius: hist.length > 30 ? 0 : 3,
             fill: true,
@@ -1165,7 +1412,7 @@ function renderCharts() {
           labels: months.map(m => { const [y,mo] = m.split('-'); return new Date(y,mo-1).toLocaleString('es-ES',{month:'short',year:'2-digit'}); }),
           datasets: [{
             data: months.map(m => Math.round(divByMonth[m] * 100) / 100),
-            backgroundColor: '#2A6B4F',
+            backgroundColor: '#3A8B65',
             borderRadius: 4
           }]
         },
@@ -1283,6 +1530,11 @@ function parseIBFile(file) {
 
 function showImportPreview(trades) {
   const sym = c => FX_SYM[c] || '';
+  // Dividend growth: compare current divAnnual vs divAnnual at first purchase
+  const firstBuyDiv = {};
+  S.trades.filter(t=>t.type==='BUY').forEach(t => {
+    if (!firstBuyDiv[t.ticker]) firstBuyDiv[t.ticker] = t.divAnnual || 0;
+  });
   const rows = trades.map((t, i) => `<tr>
     <td><span class="badge ${t.type === 'BUY' ? 'b-green' : 'b-red'}">${t.type}</span></td>
     <td><span class="tkr">${t.ticker}</span></td>
@@ -1657,6 +1909,91 @@ function showTab(id) {
 document.querySelectorAll('.overlay').forEach(el => {
   el.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
 });
+
+// ════════════════════════════════════════════
+// GOAL MANAGEMENT
+// ════════════════════════════════════════════
+function openGoalForm() {
+  document.getElementById('goal-input').value = S.goal || 1500;
+  document.getElementById('goal-overlay').classList.add('open');
+}
+function setGoalPreset(v) { document.getElementById('goal-input').value = v; }
+function saveGoal() {
+  const g = parseInt(document.getElementById('goal-input').value) || 1500;
+  S.goal = g;
+  saveState();
+  closeModal('goal-overlay');
+  renderDashboard();
+  calcProj();
+  toast('✓ Objetivo actualizado: €' + g.toLocaleString('es-ES') + '/mes');
+}
+
+// ════════════════════════════════════════════
+// CUSTOM RADAR COMPANIES
+// ════════════════════════════════════════════
+function openAddRadarForm(editIdx = -1) {
+  document.getElementById('radar-edit-idx').value = editIdx;
+  if (editIdx >= 0) {
+    const c = (S.customRadar || [])[editIdx];
+    if (c) {
+      document.getElementById('radar-modal-title').textContent = 'Editar empresa';
+      document.getElementById('r-ticker').value = c.ticker || '';
+      document.getElementById('r-name').value = c.name || '';
+      document.getElementById('r-country').value = c.country || '';
+      document.getElementById('r-sector').value = c.sector || 'Otro';
+      document.getElementById('r-yield').value = c.yield || '';
+      document.getElementById('r-freq').value = c.freq || 'Trimestral';
+      document.getElementById('r-streak').value = c.streak || 0;
+      document.getElementById('r-tier').value = c.tier || 'B';
+      document.getElementById('r-target').value = c.targetPrice || '';
+      document.getElementById('r-currency').value = c.currency || '$';
+      document.getElementById('r-note').value = c.note || '';
+    }
+  } else {
+    document.getElementById('radar-modal-title').textContent = 'Añadir empresa al radar';
+    ['r-ticker','r-name','r-country','r-yield','r-streak','r-target','r-note'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+  }
+  document.getElementById('radar-overlay').classList.add('open');
+}
+function editCustomRadar(idx) { openAddRadarForm(idx); }
+function deleteCustomRadar(idx) {
+  if (!confirm('¿Eliminar esta empresa del radar?')) return;
+  (S.customRadar || []).splice(idx, 1);
+  saveState();
+  renderRadar();
+  toast('Empresa eliminada del radar');
+}
+function saveRadarCompany() {
+  const company = {
+    ticker: document.getElementById('r-ticker').value.toUpperCase().trim(),
+    name: document.getElementById('r-name').value.trim(),
+    country: document.getElementById('r-country').value.trim(),
+    sector: document.getElementById('r-sector').value,
+    yield: document.getElementById('r-yield').value.trim() || '—',
+    freq: document.getElementById('r-freq').value,
+    streak: parseInt(document.getElementById('r-streak').value) || 0,
+    tier: document.getElementById('r-tier').value,
+    targetPrice: parseFloat(document.getElementById('r-target').value) || 0,
+    currency: document.getElementById('r-currency').value,
+    note: document.getElementById('r-note').value.trim(),
+    _custom: true
+  };
+  if (!company.ticker || !company.name) { alert('Ticker y nombre son obligatorios.'); return; }
+  if (!S.customRadar) S.customRadar = [];
+  const editIdx = parseInt(document.getElementById('radar-edit-idx').value);
+  if (editIdx >= 0) {
+    S.customRadar[editIdx] = company;
+    toast('✓ Empresa actualizada en el radar');
+  } else {
+    S.customRadar.push(company);
+    toast('✓ ' + company.ticker + ' añadida al radar');
+  }
+  saveState();
+  closeModal('radar-overlay');
+  renderRadar();
+}
 
 // ════════════════════════════════════════════
 // CASH MANAGEMENT
