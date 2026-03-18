@@ -756,19 +756,24 @@ const DEF = {
 };
 let S = JSON.parse(JSON.stringify(DEF));
 const SK = 'dtv6';
-const DATA_VERSION = '20260318_v2'; // bump this to force reset
+const DATA_VERSION = '20260318_v4'; // bump this to force reset
 function loadState(){
   try{
     const d=localStorage.getItem(SK);
-    if(d){
-      const p=JSON.parse(d);
-      if(p._version !== DATA_VERSION){
-        // Wipe stale data, force fresh preloaded
-        localStorage.removeItem(SK);
-        return;
-      }
-      S=Object.assign(JSON.parse(JSON.stringify(DEF)),p);
+    if(!d) return;
+    const p=JSON.parse(d);
+    // Version mismatch → wipe and reload fresh
+    if(p._version !== DATA_VERSION){
+      localStorage.removeItem(SK);
+      return;
     }
+    // Extra sanity check: if ADBE price > $400 in trades, data is corrupt
+    const adbe=p.trades&&p.trades.find(t=>t.ticker==='ADBE'&&t.type==='BUY');
+    if(adbe && adbe.price > 400){
+      localStorage.removeItem(SK);
+      return;
+    }
+    S=Object.assign(JSON.parse(JSON.stringify(DEF)),p);
   } catch(e){ localStorage.removeItem(SK); }
 }
 function saveState(){
@@ -777,22 +782,33 @@ function saveState(){
 
 // ─── PRELOADED IB DATA ───────────────────────────────
 const PRELOADED_TRADES = [
-  {id:'t1',type:'BUY',ticker:'O',name:'Realty Income',date:'2024-06-15',shares:10,price:52.88,currency:'USD',fee:1,divAnnual:3.072,freq:'mensual',sector:'REIT',dgi:'dgi',notes:'Core DGI mensual'},
-  {id:'t2',type:'BUY',ticker:'ENG',name:'Enagás',date:'2024-09-10',shares:50,price:12.82,currency:'EUR',fee:0.5,divAnnual:1.0,freq:'semestral',sector:'Utilities',dgi:'trans',notes:'Utility española. Revisar política dividendo'},
-  {id:'t3',type:'BUY',ticker:'FDJU',name:'FDJ United',date:'2024-11-20',shares:32,price:22.92,currency:'EUR',fee:1,divAnnual:0.9,freq:'semestral',sector:'Otro',dgi:'trans',notes:'FDJ post-fusión Kindred'},
-  {id:'t4',type:'BUY',ticker:'ADBE',date:'2024-08-05',name:'Adobe Inc',shares:5,price:540.20,currency:'USD',fee:1,divAnnual:0,freq:'trimestral',sector:'Tecnología',dgi:'spec',notes:'Especulativa. Sin dividendo. Rotar cuando tome beneficio'},
-  {id:'t5',type:'BUY',ticker:'ADBE',name:'Adobe Inc',date:'2025-01-15',shares:3,price:435.50,currency:'USD',fee:1,divAnnual:0,freq:'trimestral',sector:'Tecnología',dgi:'spec',notes:'Promediado a la baja'},
-  {id:'t6',type:'BUY',ticker:'SPR',name:'Sprinklr',date:'2024-07-22',shares:1,price:395,currency:'PLN',fee:0,divAnnual:0,freq:'trimestral',sector:'Tecnología',dgi:'spec',notes:'Especulativa pequeña en PLN'},
-  {id:'t7',type:'BUY',ticker:'SAND',name:'Sandvik',date:'2024-06-01',shares:20,price:21.50,currency:'EUR',fee:1,divAnnual:0.72,freq:'semestral',sector:'Industrial',dgi:'trans',notes:''},
-  {id:'t8',type:'SELL',ticker:'SAND',name:'Sandvik',date:'2024-10-15',shares:20,price:23.10,currency:'EUR',fee:1,divAnnual:0.72,freq:'semestral',sector:'Industrial',dgi:'trans',notes:'Vendida con +7%'},
-  {id:'t9',type:'BUY',ticker:'GIFI',name:'Gulf Island Fab.',date:'2024-07-01',shares:15,price:8.20,currency:'USD',fee:1,divAnnual:0,freq:'trimestral',sector:'Industrial',dgi:'spec',notes:''},
-  {id:'t10',type:'SELL',ticker:'GIFI',name:'Gulf Island Fab.',date:'2024-12-10',shares:15,price:9.50,currency:'USD',fee:1,divAnnual:0,freq:'trimestral',sector:'Industrial',dgi:'spec',notes:'Vendida'},
-  {id:'t11',type:'BUY',ticker:'TUB',name:'Tubacex',date:'2024-05-15',shares:100,price:3.85,currency:'EUR',fee:0.5,divAnnual:0.12,freq:'semestral',sector:'Industrial',dgi:'trans',notes:''},
-  {id:'t12',type:'SELL',ticker:'TUB',name:'Tubacex',date:'2024-11-20',shares:100,price:4.10,currency:'EUR',fee:0.5,divAnnual:0.12,freq:'semestral',sector:'Industrial',dgi:'trans',notes:'Vendida'},
-  {id:'t13',type:'BUY',ticker:'VUSA',name:'Vanguard S&P500',date:'2024-04-10',shares:10,price:89.50,currency:'EUR',fee:0.5,divAnnual:1.8,freq:'trimestral',sector:'ETF',dgi:'trans',notes:'ETF transición'},
-  {id:'t14',type:'SELL',ticker:'VUSA',name:'Vanguard S&P500',date:'2024-09-20',shares:10,price:95.20,currency:'EUR',fee:0.5,divAnnual:1.8,freq:'trimestral',sector:'ETF',dgi:'trans',notes:'Vendido'},
-  {id:'t15',type:'BUY',ticker:'FUSD',name:'Franklin USD',date:'2024-05-01',shares:50,price:10.10,currency:'EUR',fee:0.5,divAnnual:0.45,freq:'mensual',sector:'ETF',dgi:'trans',notes:''},
-  {id:'t16',type:'SELL',ticker:'FUSD',name:'Franklin USD',date:'2024-10-01',shares:50,price:10.25,currency:'EUR',fee:0.5,divAnnual:0.45,freq:'mensual',sector:'ETF',dgi:'trans',notes:'Vendido'},
+  // ── POSICIONES ABIERTAS — precios exactos del informe IB 17/03/2026 ──
+  // O: cost basis IB = $52.4996922/acc (incl. fee prorrateada)
+  {id:'t1',type:'BUY',ticker:'O',name:'Realty Income',date:'2024-06-20',shares:10,price:52.4997,currency:'USD',fee:0,divAnnual:3.072,freq:'mensual',sector:'REIT',dgi:'dgi',notes:'Core DGI mensual. 133 subidas.'},
+  // ENG: cost basis IB = €12.88/acc (€644 total)
+  {id:'t2',type:'BUY',ticker:'ENG',name:'Enagás',date:'2024-12-04',shares:50,price:12.88,currency:'EUR',fee:0,divAnnual:1.0,freq:'semestral',sector:'Utilities',dgi:'trans',notes:'Utility española. Revisar política dividendo.'},
+  // FDJU: cost basis IB = €23.01375/acc (€736.44 total)
+  {id:'t3',type:'BUY',ticker:'FDJU',name:'FDJ United',date:'2026-02-16',shares:32,price:23.01375,currency:'EUR',fee:0,divAnnual:0.9,freq:'semestral',sector:'Otro',dgi:'trans',notes:'FDJ United post-fusión Kindred.'},
+  // ADBE: cost basis IB = $294.64375825/acc ($2357.15 total para 8 acc)
+  // Dos compras reales: 3 acc @ $351.40 (oct-25) y 5 acc @ $260.19 (feb-26)
+  {id:'t4',type:'BUY',ticker:'ADBE',name:'Adobe Inc',date:'2025-10-03',shares:3,price:351.4,currency:'USD',fee:1.000066,divAnnual:0,freq:'trimestral',sector:'Tecnología',dgi:'spec',notes:'3 acc @ $351.40'},
+  {id:'t5',type:'BUY',ticker:'ADBE',name:'Adobe Inc',date:'2026-02-13',shares:5,price:260.19,currency:'USD',fee:1,divAnnual:0,freq:'trimestral',sector:'Tecnología',dgi:'spec',notes:'5 acc @ $260.19. Precio medio ~$295.'},
+  // SPR: cost basis IB = 396.875 PLN/acc (1 acc abierta)
+  {id:'t6',type:'BUY',ticker:'SPR',name:'Spyrosoft',date:'2024-10-11',shares:8,price:396.875,currency:'PLN',fee:0,divAnnual:0,freq:'trimestral',sector:'Tecnología',dgi:'spec',notes:'8 acc @ 395 PLN. IB cost basis 396.875 PLN/acc.'},
+  {id:'t7',type:'SELL',ticker:'SPR',name:'Spyrosoft',date:'2025-11-25',shares:7,price:508,currency:'PLN',fee:15,divAnnual:0,freq:'trimestral',sector:'Tecnología',dgi:'spec',notes:'Vendidas 7 de 8. Queda 1.'},
+  // ── POSICIONES CERRADAS ──
+  {id:'t8',type:'BUY',ticker:'SAND',name:'Sandvik',date:'2024-08-23',shares:70,price:5.54,currency:'USD',fee:1,divAnnual:0.30,freq:'semestral',sector:'Industrial',dgi:'trans',notes:''},
+  {id:'t9',type:'BUY',ticker:'SAND',name:'Sandvik',date:'2024-10-15',shares:70,price:5.815,currency:'USD',fee:1.005,divAnnual:0.30,freq:'semestral',sector:'Industrial',dgi:'trans',notes:''},
+  {id:'t10',type:'BUY',ticker:'SAND',name:'Sandvik',date:'2024-12-06',shares:30,price:5.655,currency:'USD',fee:1.002,divAnnual:0.30,freq:'semestral',sector:'Industrial',dgi:'trans',notes:''},
+  {id:'t11',type:'SELL',ticker:'SAND',name:'Sandvik',date:'2025-07-23',shares:170,price:9.67,currency:'USD',fee:1.032,divAnnual:0,freq:'semestral',sector:'Industrial',dgi:'trans',notes:'+€675 realizado.'},
+  {id:'t12',type:'BUY',ticker:'GIFI',name:'Gulf Island Fab.',date:'2024-11-27',shares:70,price:6.855,currency:'USD',fee:1.005,divAnnual:0,freq:'trimestral',sector:'Industrial',dgi:'spec',notes:''},
+  {id:'t13',type:'SELL',ticker:'GIFI',name:'Gulf Island Fab.',date:'2025-10-30',shares:70,price:7.80,currency:'USD',fee:1.013,divAnnual:0,freq:'trimestral',sector:'Industrial',dgi:'spec',notes:'+€55 realizado.'},
+  {id:'t14',type:'BUY',ticker:'TUB',name:'Tubacex',date:'2024-09-16',shares:125,price:2.83,currency:'EUR',fee:3,divAnnual:0.20361,freq:'semestral',sector:'Industrial',dgi:'trans',notes:''},
+  {id:'t15',type:'SELL',ticker:'TUB',name:'Tubacex',date:'2026-03-10',shares:125,price:3.12,currency:'EUR',fee:3,divAnnual:0,freq:'semestral',sector:'Industrial',dgi:'trans',notes:'+€30 realizado.'},
+  {id:'t16',type:'BUY',ticker:'VUSA',name:'Vanguard S&P500 ETF',date:'2024-07-24',shares:3,price:96.5356,currency:'EUR',fee:3,divAnnual:1.80,freq:'trimestral',sector:'ETF',dgi:'trans',notes:''},
+  {id:'t17',type:'SELL',ticker:'VUSA',name:'Vanguard S&P500 ETF',date:'2024-10-11',shares:3,price:100.04,currency:'EUR',fee:4.5,divAnnual:0,freq:'trimestral',sector:'ETF',dgi:'trans',notes:'+€3 realizado.'},
+  {id:'t18',type:'BUY',ticker:'FUSD',name:'Franklin FTSE USD',date:'2024-09-26',shares:100,price:10.93,currency:'USD',fee:4,divAnnual:0.45,freq:'mensual',sector:'ETF',dgi:'trans',notes:''},
+  {id:'t19',type:'SELL',ticker:'FUSD',name:'Franklin FTSE USD',date:'2024-11-14',shares:100,price:11.105,currency:'USD',fee:4,divAnnual:0,freq:'mensual',sector:'ETF',dgi:'trans',notes:'+€9.50 realizado.'},
 ];
 
 const PRELOADED_DIVS = [
@@ -1000,16 +1016,34 @@ function setCur(c){
 function getPositions(){
   const map={};
   S.trades.forEach(t=>{
-    if(!map[t.ticker])map[t.ticker]={ticker:t.ticker,name:t.name,currency:t.currency,sector:t.sector,shares:0,costTotal:0,fees:0,divAnnual:t.divAnnual||0,freq:t.freq||"trimestral",firstDate:t.date,dgi:t.dgi||"spec"};
+    if(!map[t.ticker])map[t.ticker]={ticker:t.ticker,name:t.name,currency:t.currency,sector:t.sector,shares:0,totalBought:0,costTotal:0,fees:0,divAnnual:t.divAnnual||0,freq:t.freq||"trimestral",firstDate:t.date,dgi:t.dgi||"spec"};
     const p=map[t.ticker];
     if(t.date<p.firstDate)p.firstDate=t.date;
-    if(t.type==="BUY"){p.shares+=t.shares;p.costTotal+=t.shares*t.price;p.fees+=t.fee||0;p.divAnnual=t.divAnnual||p.divAnnual;}
-    if(t.type==="SELL"){p.shares-=t.shares;p.fees+=t.fee||0;}
+    if(t.type==="BUY"){
+      p.shares+=t.shares;
+      p.totalBought+=t.shares;
+      p.costTotal+=t.shares*t.price;
+      p.fees+=t.fee||0;
+      p.divAnnual=t.divAnnual||p.divAnnual;
+    }
+    if(t.type==="SELL"){p.shares-=t.shares;}
   });
-  // Apply posMeta overrides
   return Object.values(map).filter(p=>p.shares>0.0001).map(p=>{
     const m=S.posMeta[p.ticker]||{};
-    return {...p,dgi:m.dgi||p.dgi,divAnnual:m.divAnnual!=null?m.divAnnual:p.divAnnual,freq:m.freq||p.freq,sector:m.sector||p.sector,target:m.target||0,notes:m.notes||""};
+    // Prorate cost to open shares only (avg cost method)
+    const avgCost=p.totalBought>0?p.costTotal/p.totalBought:0;
+    const avgFee=p.totalBought>0?p.fees/p.totalBought:0;
+    return {
+      ...p,
+      costTotal:avgCost*p.shares,  // cost of open shares only
+      fees:avgFee*p.shares,
+      dgi:m.dgi||p.dgi,
+      divAnnual:m.divAnnual!=null?m.divAnnual:p.divAnnual,
+      freq:m.freq||p.freq,
+      sector:m.sector||p.sector,
+      target:m.target||0,
+      notes:m.notes||""
+    };
   });
 }
 
@@ -1207,6 +1241,24 @@ function saveNavSnapshot(nav){
   if(!last||last.d!==today){S.navHistory.push({d:today,v:Math.round(nav)});if(S.navHistory.length>365)S.navHistory.shift();saveState();}
 }
 
+// ─── SORT HELPERS (global so onclick can find them) ──
+function si(col){
+  if(activeSortCol!==col) return '<span style="opacity:.2;font-size:9px;margin-left:2px">&#8645;</span>';
+  return activeSortDir===1
+    ? '<span style="color:var(--accL);font-size:9px;margin-left:2px">&#9650;</span>'
+    : '<span style="color:var(--accL);font-size:9px;margin-left:2px">&#9660;</span>';
+}
+function sc(col){
+  if(activeSortCol===col){
+    activeSortDir = activeSortDir===1 ? -1 : activeSortDir===-1 ? 0 : 1;
+    if(activeSortDir===0) activeSortCol=null;
+  } else {
+    activeSortCol=col;
+    activeSortDir=1;
+  }
+  renderPositions();
+}
+
 // ─── RENDER POSITIONS ────────────────────────────────
 function renderPositions(){
   const pos=getPositions();
@@ -1266,8 +1318,7 @@ function renderPositions(){
     });
   }
 
-  function si(col){if(activeSortCol!==col)return'<span style="opacity:.2;font-size:9px;margin-left:2px">&#8645;</span>';return activeSortDir===1?'<span style="color:var(--accL);font-size:9px;margin-left:2px">&#9650;</span>':'<span style="color:var(--accL);font-size:9px;margin-left:2px">&#9660;</span>';}
-  function sc(col){activeSortCol===col?activeSortDir=activeSortDir===1?-1:activeSortDir===-1?0:1:((activeSortCol=col),(activeSortDir=1));if(activeSortDir===0)activeSortCol=null;renderPositions();}
+
 
   const dgiMap={dgi:["DGI","bg"],trans:["TRANS.","bo"],spec:["ESPEC.","br"]};
   const rows=sorted.map(p=>{
@@ -1571,16 +1622,18 @@ function renderRadar(){
 }
 
 function filterTier(btn){
+  const pill = btn.closest ? btn.closest(".pill") || btn : btn;
   document.querySelectorAll("#tier-pills .pill").forEach(p=>p.classList.remove("on"));
-  btn.classList.add("on");
-  activeTierFilter=btn.getAttribute("data-tier");
+  pill.classList.add("on");
+  activeTierFilter = pill.getAttribute("data-tier") || "all";
   renderRadar();
 }
 
 function filterVerdict(btn,v){
+  const pill = btn.closest ? btn.closest(".pill") || btn : btn;
   document.querySelectorAll("#verdict-pills .pill").forEach(p=>p.classList.remove("on"));
-  btn.classList.add("on");
-  activeVerdictFilter=v;
+  pill.classList.add("on");
+  activeVerdictFilter = v;
   renderRadar();
 }
 
@@ -1866,31 +1919,41 @@ function loadBackupFile(e){
   };reader.readAsText(file);
 }
 function applyPreloaded(){
+  // Data only — no rendering
   S=JSON.parse(JSON.stringify(DEF));
   S.trades=JSON.parse(JSON.stringify(PRELOADED_TRADES));
   S.dividends=JSON.parse(JSON.stringify(PRELOADED_DIVS));
   S.posMeta=JSON.parse(JSON.stringify(PRELOADED_META));
   S.prices=JSON.parse(JSON.stringify(PRELOADED_PRICES));
   S.fx=JSON.parse(JSON.stringify(PRELOADED_FX));
+  S.cur='EUR';
   saveState();
+}
+function resetToPreloaded(){
+  if(!confirm("¿Restaurar los datos originales de IB? Se perderán los cambios no guardados en backup."))return;
+  applyPreloaded();
+  // Re-render everything after data is set
   renderFXStrip();
+  if(S.cur==="USD")setCur("USD"); else setCur("EUR");
   renderDashboard();
   renderPositions();
   renderTrades();
   renderCalendar();
   renderRadar();
-  if(S.cur==="USD")setCur("USD");else setCur("EUR");
-}
-function resetToPreloaded(){
-  if(!confirm("¿Restaurar los datos originales de IB? Se perderán los cambios no guardados en backup."))return;
-  applyPreloaded();
   toast("✓ Datos IB originales restaurados");
 }
 function hardReset(){
   if(!confirm("⚠ BORRAR TODOS LOS DATOS y restaurar los datos IB originales. ¿Continuar?"))return;
   localStorage.removeItem(SK);
   applyPreloaded();
-  toast("✓ Datos restaurados");
+  renderFXStrip();
+  if(S.cur==="USD")setCur("USD"); else setCur("EUR");
+  renderDashboard();
+  renderPositions();
+  renderTrades();
+  renderCalendar();
+  renderRadar();
+  toast("✓ Datos restaurados a IB originales");
 }
 
 // ─── IB IMPORT ───────────────────────────────────────
@@ -1907,45 +1970,4 @@ function parseIBFile(file){
       if(cols[0]==="Trades"&&cols[1]==="Data"&&cols[2]==="Order"&&cols[3]==="Stocks"){
         const currency=cols[4]||"EUR";
         const ticker=cols[5]||"";
-        const date=(cols[6]||"").split(",")[0].trim().replace(/\//g,"-");
-        const qty=parseFloat(cols[7])||0;
-        const price=parseFloat(cols[8])||0;
-        const fees=Math.abs(parseFloat(cols[11])||0);
-        if(ticker&&price&&qty){
-          importBuffer.push({type:qty>0?"BUY":"SELL",ticker,name:ticker,date:date||todayISO(),shares:Math.abs(qty),price,currency,fee:fees,divAnnual:0,freq:"trimestral",sector:"Otro",dgi:"spec"});
-        }
-      }
-    });
-    if(!importBuffer.length){toast("⚠ No se detectaron operaciones en el CSV");return;}
-    document.getElementById("import-preview-content").innerHTML=`<p style="margin-bottom:10px;color:var(--ink3);font-size:13px">${importBuffer.length} operaciones detectadas</p>`+`<div class="tw"><table class="t"><thead><tr><th>Tipo</th><th>Ticker</th><th>Fecha</th><th class="nr">Acciones</th><th class="nr">Precio</th></tr></thead><tbody>${importBuffer.slice(0,20).map(t=>`<tr><td><span class="b ${t.type==="BUY"?"bg":"br"}">${t.type}</span></td><td><span class="tkr">${t.ticker}</span></td><td style="font-size:11px">${fmtDate(t.date)}</td><td class="nr">${fn(t.shares,2)}</td><td class="nr">${SYM[t.currency]||""}${fn(t.price,2)}</td></tr>`).join("")}${importBuffer.length>20?`<tr><td colspan="5" style="text-align:center;color:var(--ink3);font-size:11px">...y ${importBuffer.length-20} más</td></tr>`:""}</tbody></table></div>`;
-    document.getElementById("import-preview").style.display="block";
-  };reader.readAsText(file);
-}
-function confirmImport(){
-  importBuffer.forEach(t=>{t.id=uid();S.trades.push(t);});
-  saveState();document.getElementById("import-preview").style.display="none";importBuffer=[];
-  renderDashboard();renderPositions();renderTrades();
-  toast("✓ "+importBuffer.length+" operaciones importadas. Actualiza los dividendos con ✎ en Posiciones.");
-}
-
-// ─── INIT ────────────────────────────────────────────
-loadState();
-
-// Always apply preloaded if state is missing or version mismatch
-// (version mismatch already cleared localStorage in loadState)
-if(!S.trades || S.trades.length === 0){
-  applyPreloaded();
-}
-
-// Restore currency toggle UI
-if(S.cur==="USD")setCur("USD");else setCur("EUR");
-
-// Init FX strip
-renderFXStrip();
-
-// Render default tab
-renderDashboard();
-
-</script>
-</body>
-</html>
+    
