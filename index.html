@@ -171,7 +171,6 @@ table.t tr:hover td{background:var(--bg3)}
       <button class="tab" onclick="go('radar')">Radar</button>
       <button class="tab" onclick="go('charts')">Gráficas</button>
       <button class="tab" onclick="go('import')">Importar IB</button>
-      <button class="tab" onclick="go('analysis')">🤖 Analizar</button>
       <button class="tab" onclick="go('manual')">📖 Ayuda</button>
     </div>
     <div class="nav-btns">
@@ -554,10 +553,6 @@ table.t tr:hover td{background:var(--bg3)}
     <div class="ms-b"><strong style="color:var(--ink)">↓ Backup</strong>: descarga un JSON con toda tu cartera. Guárdalo en Google Drive. Hazlo al menos mensualmente. <strong style="color:var(--ink)">Cargar JSON</strong> en Importar IB: restaura cualquier backup. <strong style="color:var(--redL)">⚠ Borrar todo</strong>: elimina todos los datos del navegador y recarga con los datos IB originales — irreversible si no tienes backup.</div>
   </div>
 
-  <div id="m13" class="card" style="margin-bottom:10px">
-    <div class="ms-t">⑬ Analizar empresa con IA</div>
-    <div class="ms-b">La pestaña <strong style="color:var(--ink)">🤖 Analizar</strong> permite analizar cualquier empresa cotizada en NYSE/NASDAQ usando inteligencia artificial (Claude) combinada con datos reales de la SEC EDGAR. Introduce el ticker, pulsa ⚡ Analizar y en 10-20 segundos obtendrás: FCF Payout real, Deuda/EBITDA, sostenibilidad del dividendo, tier DGI recomendado, precio objetivo razonado y análisis completo en español. El botón <strong style="color:var(--ink)">+ Añadir al Radar</strong> incorpora automáticamente la empresa al radar con todas sus métricas calculadas. <strong style="color:var(--goldL)">Requiere conexión a Claude</strong> — funciona cuando la app está abierta dentro de claude.ai con tu sesión activa. Para empresas europeas o sin datos en la SEC, la IA analiza con su conocimiento de entrenamiento.</div>
-  </div>
 
   <div style="text-align:center;padding:16px;color:var(--ink3);font-size:11px;border-top:1px solid var(--bd);margin-top:6px">
     DividendTrack v6 · No es asesoramiento financiero · Datos y precios objetivo orientativos basados en análisis a agosto 2025 · Verifica siempre antes de invertir
@@ -565,85 +560,6 @@ table.t tr:hover td{background:var(--bg3)}
 </div>
 
 
-<!-- ANÁLISIS CON IA -->
-<div id="p-analysis" class="panel">
-  <div class="abar">
-    <div class="atitle">🤖 Analizar empresa con IA</div>
-    <div style="font-size:12px;color:var(--ink3)">Powered by Claude · SEC EDGAR</div>
-  </div>
-
-  <!-- INPUT -->
-  <div class="card" style="margin-bottom:14px">
-    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
-      <div style="flex:1;min-width:140px">
-        <label style="font-size:10px;color:var(--ink3);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px;font-weight:500">Ticker</label>
-        <input id="ai-ticker" type="text" placeholder="Ej: JNJ, KO, ABBV..."
-          style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:var(--rs);background:var(--bg3);color:var(--ink);font-size:15px;font-family:var(--mono);font-weight:600;letter-spacing:1px"
-          oninput="this.value=this.value.toUpperCase()"
-          onkeydown="if(event.key==='Enter')analyzeCompany()">
-      </div>
-      <div style="flex:2;min-width:200px">
-        <label style="font-size:10px;color:var(--ink3);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px;font-weight:500">Contexto adicional (opcional)</label>
-        <input id="ai-context" type="text" placeholder="Ej: sector utilities, comparo con NEE..."
-          style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:var(--rs);background:var(--bg3);color:var(--ink);font-size:13px;font-family:var(--font)">
-      </div>
-      <button class="btn bp" onclick="analyzeCompany()" id="ai-btn" style="padding:9px 22px;white-space:nowrap">
-        ⚡ Analizar
-      </button>
-    </div>
-    <div style="margin-top:10px;font-size:11px;color:var(--ink3);line-height:1.7">
-      Introduce el ticker de cualquier empresa cotizada en NYSE/NASDAQ. La IA consultará la SEC EDGAR para obtener los datos financieros reales del último informe y calculará: FCF Payout, Deuda/EBITDA, sostenibilidad del dividendo, valoración y recomendación DGI.
-    </div>
-  </div>
-
-  <!-- LOADING -->
-  <div id="ai-loading" style="display:none;text-align:center;padding:40px">
-    <div style="font-size:28px;margin-bottom:12px;animation:pulse 1.5s infinite">⚡</div>
-    <div style="font-size:14px;color:var(--ink2);font-weight:500" id="ai-loading-msg">Consultando SEC EDGAR...</div>
-    <div style="font-size:12px;color:var(--ink3);margin-top:6px">Esto puede tardar 10-20 segundos</div>
-  </div>
-
-  <!-- RESULT -->
-  <div id="ai-result" style="display:none">
-    <!-- Header empresa -->
-    <div class="card" style="margin-bottom:12px;border-left:3px solid var(--accL)">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
-        <div>
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
-            <span class="tkr" style="font-size:20px" id="ai-res-ticker">—</span>
-            <span style="font-size:14px;color:var(--ink2)" id="ai-res-name">—</span>
-          </div>
-          <div style="font-size:12px;color:var(--ink3)" id="ai-res-sector">—</div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn bp sm" onclick="addAnalysisToRadar()" id="ai-add-radar-btn" style="display:none">+ Añadir al Radar</button>
-          <button class="btn bg2 sm" onclick="document.getElementById('ai-result').style.display='none'">✕ Cerrar</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Métricas clave -->
-    <div class="g4" style="margin-bottom:12px" id="ai-metrics-grid"></div>
-
-    <!-- Análisis completo -->
-    <div class="card" style="margin-bottom:12px">
-      <div class="st">Análisis completo</div>
-      <div id="ai-analysis-text" style="font-size:13px;color:var(--ink2);line-height:1.9;white-space:pre-wrap"></div>
-    </div>
-
-    <!-- Datos SEC -->
-    <div class="card" id="ai-sec-card" style="margin-bottom:12px;display:none">
-      <div class="st">Datos financieros SEC EDGAR</div>
-      <div id="ai-sec-data" style="font-size:12px;color:var(--ink3);font-family:var(--mono);line-height:2"></div>
-    </div>
-  </div>
-
-  <!-- HISTORIAL -->
-  <div id="ai-history-section" style="margin-top:16px">
-    <div class="st">Análisis recientes</div>
-    <div id="ai-history-list" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-  </div>
-</div>
 </div><!-- end .app -->
 
 <!-- TOAST -->
@@ -880,7 +796,7 @@ const DEF = {
   cash:{EUR:390,USD:40.65,PLN:56.82,GBP:0},
   goal:1500, cur:'EUR',
   posMeta:{}, hiddenRadar:[], customRadar:[],
-  navHistory:[], secMetrics:{}, secDate:'', radarOverrides:{}, aiHistory:[]
+  navHistory:[], secMetrics:{}, secDate:'', radarOverrides:{}
 };
 let S = JSON.parse(JSON.stringify(DEF));
 const SK = 'dtv6';
@@ -1049,7 +965,7 @@ function go(id){
   if(!panel){console.warn("Panel not found: p-"+id);return;}
   panel.classList.add("on");
   const tabs=document.querySelectorAll(".tab");
-  const names=["dashboard","positions","trades","calendar","projection","radar","charts","import","analysis","manual"];
+  const names=["dashboard","positions","trades","calendar","projection","radar","charts","import","manual"];
   const idx=names.indexOf(id);
   if(tabs[idx])tabs[idx].classList.add("on");
   if(id==="dashboard")renderDashboard();
@@ -1059,7 +975,6 @@ function go(id){
   if(id==="projection")calcProj();
   if(id==="radar")renderRadar();
   if(id==="charts")renderCharts();
-  if(id==="analysis"){renderAIHistory();}
   } catch(e){ console.error('go() error:', e); }
 }
 
@@ -2394,333 +2309,6 @@ function confirmImport(){
   saveState();document.getElementById("import-preview").style.display="none";importBuffer=[];
   renderDashboard();renderPositions();renderTrades();
   toast("✓ "+importBuffer.length+" operaciones importadas. Actualiza los dividendos con ✎ en Posiciones.");
-}
-
-// ─── ANÁLISIS IA ──────────────────────────────────────
-let aiAnalysisCache = {}; // { ticker: {result, timestamp} }
-let aiCurrentAnalysis = null; // current result for "add to radar"
-
-async function analyzeCompany(){
-  const ticker = document.getElementById('ai-ticker').value.trim().toUpperCase();
-  if(!ticker){ toast('⚠ Introduce un ticker'); return; }
-
-  const context = document.getElementById('ai-context').value.trim();
-  const btn = document.getElementById('ai-btn');
-  const loading = document.getElementById('ai-loading');
-  const result = document.getElementById('ai-result');
-  const loadingMsg = document.getElementById('ai-loading-msg');
-
-  // Check if we're in claude.ai context (API accessible)
-  const inClaudeAI = window.location.hostname.includes('claude.ai') ||
-                     window.location.hostname === 'localhost' ||
-                     window.location.hostname === '127.0.0.1';
-  if(!inClaudeAI){
-    const el = document.getElementById('ai-result');
-    el.style.display = 'block';
-    el.innerHTML = `<div class="card" style="border-left:3px solid var(--goldL);padding:20px">
-      <div style="font-size:16px;font-weight:600;margin-bottom:10px">⚠ Función IA no disponible en GitHub Pages</div>
-      <p style="font-size:13px;color:var(--ink2);line-height:1.8;margin-bottom:12px">
-        La función de análisis con IA requiere estar dentro de <strong>claude.ai</strong> para poder llamar a la API de Anthropic.
-        Desde GitHub Pages las llamadas a APIs externas están bloqueadas por razones de seguridad (CORS).
-      </p>
-      <p style="font-size:13px;color:var(--ink2);line-height:1.8;margin-bottom:12px">
-        <strong>Para usar esta función:</strong><br>
-        1. Abre claude.ai en tu navegador<br>
-        2. Sube o abre el archivo HTML como artefacto<br>
-        3. La pestaña 🤖 Analizar funcionará con tu sesión de Claude
-      </p>
-      <p style="font-size:12px;color:var(--ink3)">
-        El resto de la app (posiciones, radar, dividendos, proyección) funciona perfectamente aquí en GitHub Pages.
-      </p>
-    </div>`;
-    return;
-  }
-
-  // Show loading
-  result.style.display = 'none';
-  loading.style.display = 'block';
-  btn.disabled = true;
-  btn.textContent = '⟳ Analizando...';
-
-  try {
-    // Step 1: Get SEC data
-    loadingMsg.textContent = 'Consultando SEC EDGAR...';
-    let secData = null;
-    try {
-      secData = await fetchSECForAnalysis(ticker);
-    } catch(e) {
-      secData = null;
-    }
-
-    // Step 2: Build prompt for Claude
-    loadingMsg.textContent = 'Analizando con IA...';
-
-    const portfolioContext = buildPortfolioContext();
-    const secContext = secData
-      ? `\n\nDATOS FINANCIEROS REALES DE LA SEC (último informe disponible):\n${JSON.stringify(secData, null, 2)}`
-      : '\n\n(No se pudieron obtener datos de la SEC para esta empresa — analiza con tus datos de entrenamiento)';
-
-    const prompt = `Eres un analista experto en inversión por dividendos crecientes (DGI — Dividend Growth Investing). 
-El usuario tiene una cartera DGI con objetivo de €1.500/mes en dividendos en un horizonte de 15-20 años.
-
-${portfolioContext}
-
-El usuario quiere analizar la empresa: **${ticker}**${context ? ` (contexto adicional: ${context})` : ''}
-${secContext}
-
-Proporciona un análisis estructurado EXACTAMENTE en este formato JSON (sin markdown, solo JSON puro):
-{
-  "name": "nombre completo de la empresa",
-  "sector": "sector",
-  "country": "país emoji + nombre",
-  "yield": "X.X%",
-  "streak": número de años consecutivos subiendo dividendo,
-  "tier": "A" o "B" o "C",
-  "metrics": {
-    "pe": "Xx",
-    "fcfPayout": "XX%",
-    "debtEbitda": "X.Xx",
-    "divGrowth5y": "X%",
-    "verdict": "COMPRAR" o "ACUMULAR" o "VIGILAR" o "EVITAR"
-  },
-  "targetPrice": número (precio objetivo de entrada en USD/EUR),
-  "currency": "$" o "€" o "£",
-  "analysis": "Análisis detallado en español de 300-400 palabras: foso económico, sostenibilidad del dividendo, riesgos principales, por qué sí o no para una cartera DGI, y justificación del precio objetivo. Sé directo y específico como si fueras Warren Buffett analizando para invertir.",
-  "secDataUsed": true o false,
-  "keyRisks": ["riesgo 1", "riesgo 2", "riesgo 3"],
-  "note": "resumen de 1-2 frases para la tarjeta del radar"
-}`;
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-
-    const data = await response.json();
-    const rawText = data.content?.[0]?.text || '';
-
-    // Parse JSON from response
-    let analysis;
-    try {
-      const clean = rawText.replace(/```json|```/g, '').trim();
-      analysis = JSON.parse(clean);
-    } catch(e) {
-      throw new Error('No se pudo parsear la respuesta de la IA');
-    }
-
-    // Cache result
-    aiAnalysisCache[ticker] = { result: analysis, secData, timestamp: Date.now() };
-    if(!S.aiHistory) S.aiHistory = [];
-    if(!S.aiHistory.find(h => h.ticker === ticker)){
-      S.aiHistory.unshift({ ticker, name: analysis.name, timestamp: Date.now() });
-      if(S.aiHistory.length > 20) S.aiHistory.pop();
-    }
-    saveState();
-
-    aiCurrentAnalysis = { ticker, ...analysis };
-    renderAnalysisResult(ticker, analysis, secData);
-    renderAIHistory();
-
-  } catch(err) {
-    toast('⚠ Error: ' + (err.message || 'Fallo en el análisis'));
-    console.error(err);
-  } finally {
-    loading.style.display = 'none';
-    btn.disabled = false;
-    btn.textContent = '⚡ Analizar';
-  }
-}
-
-async function fetchSECForAnalysis(ticker){
-  // Get CIK
-  if(!secTickerMap){
-    const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent('https://www.sec.gov/files/company_tickers.json')}`;
-    const res = await fetch(proxy, { signal: AbortSignal.timeout(8000) });
-    const data = await res.json();
-    const parsed = JSON.parse(data.contents);
-    secTickerMap = {};
-    Object.values(parsed).forEach(co => { secTickerMap[co.ticker] = String(co.cik_str).padStart(10,'0'); });
-  }
-  const cik = secTickerMap[ticker];
-  if(!cik) return null;
-
-  const url = `https://data.sec.gov/api/xbrl/companyfacts/CIK${cik}.json`;
-  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-  const res = await fetch(proxy, { signal: AbortSignal.timeout(12000) });
-  const data = await res.json();
-  const facts = JSON.parse(data.contents);
-
-  return extractSECForPrompt(facts);
-}
-
-function extractSECForPrompt(facts){
-  const us = facts?.facts?.['us-gaap'] || {};
-  function latest(concept){
-    const d = us[concept]?.units?.USD;
-    if(!d) return null;
-    const annual = d.filter(x => x.form === '10-K' && x.val != null).sort((a,b) => b.end?.localeCompare(a.end));
-    if(annual.length) return { value: annual[0].val, date: annual[0].end, form: '10-K' };
-    const q = d.filter(x => x.form === '10-Q' && x.val != null).sort((a,b) => b.end?.localeCompare(a.end));
-    if(q.length) return { value: q.slice(0,4).reduce((s,x)=>s+x.val,0), date: q[0].end, form: '10-Q TTM' };
-    return null;
-  }
-  const r = {
-    netIncome: latest('NetIncomeLoss'),
-    operatingCashFlow: latest('NetCashProvidedByUsedInOperatingActivities'),
-    capex: latest('PaymentsToAcquirePropertyPlantAndEquipment'),
-    dividendsPaid: latest('PaymentsOfDividends') || latest('PaymentsOfDividendsCommonStock'),
-    longTermDebt: latest('LongTermDebt') || latest('LongTermDebtNoncurrent'),
-    cash: latest('CashAndCashEquivalentsAtCarryingValue'),
-    revenue: latest('Revenues') || latest('RevenueFromContractWithCustomerExcludingAssessedTax'),
-    ebit: latest('OperatingIncomeLoss'),
-  };
-  // Calculate derived metrics
-  if(r.operatingCashFlow && r.capex){
-    r.fcf = { value: r.operatingCashFlow.value - Math.abs(r.capex.value), note: 'Calculado' };
-  }
-  if(r.fcf && r.dividendsPaid && r.fcf.value > 0){
-    r.fcfPayoutRatio = { value: Math.round(Math.abs(r.dividendsPaid.value) / r.fcf.value * 100) + '%' };
-  }
-  if(r.longTermDebt && r.cash && r.ebit && Math.abs(r.ebit.value) > 0){
-    const netDebt = r.longTermDebt.value - r.cash.value;
-    r.netDebtEbitda = { value: (netDebt / Math.abs(r.ebit.value)).toFixed(2) + 'x' };
-  }
-  return r;
-}
-
-function buildPortfolioContext(){
-  const pos = getPositions();
-  if(!pos.length) return 'El usuario aún no tiene posiciones en cartera.';
-  const tickers = pos.map(p => p.ticker).join(', ');
-  const totalDiv = pos.reduce((s,p) => s + toEur(p.shares*p.divAnnual,p.currency), 0);
-  return `Cartera actual del usuario: ${tickers}. Dividendo mensual estimado actual: €${Math.round(totalDiv/12)}. Objetivo: €1.500/mes.`;
-}
-
-function renderAnalysisResult(ticker, a, secData){
-  document.getElementById('ai-result').style.display = 'block';
-  document.getElementById('ai-res-ticker').textContent = ticker;
-  document.getElementById('ai-res-name').textContent = a.name || '—';
-  document.getElementById('ai-res-sector').textContent = (a.country||'') + ' · ' + (a.sector||'') + ' · Streak: ' + (a.streak||'?') + ' años';
-
-  const vColor = a.metrics?.verdict === 'COMPRAR' ? 'var(--greenL)' :
-                 a.metrics?.verdict === 'ACUMULAR' ? 'var(--goldL)' :
-                 a.metrics?.verdict === 'EVITAR' ? 'var(--redL)' : 'var(--ink2)';
-  const tierColor = a.tier === 'A' ? 'var(--accL)' : a.tier === 'B' ? 'var(--blueL)' : 'var(--goldL)';
-
-  const metrics = [
-    { label: 'Veredicto', value: a.metrics?.verdict || '—', color: vColor, big: true },
-    { label: 'Tier DGI', value: a.tier || '—', color: tierColor, big: true },
-    { label: 'Yield', value: a.yield || '—', color: 'var(--accL)' },
-    { label: 'Precio obj.', value: (a.currency||'$') + (a.targetPrice||'—'), color: 'var(--goldL)' },
-    { label: 'P/E', value: a.metrics?.pe || '—' },
-    { label: 'FCF Payout', value: a.metrics?.fcfPayout || '—',
-      color: parseInt(a.metrics?.fcfPayout)>85 ? 'var(--redL)' : parseInt(a.metrics?.fcfPayout)>65 ? 'var(--goldL)' : 'var(--greenL)' },
-    { label: 'Deuda/EBITDA', value: a.metrics?.debtEbitda || '—' },
-    { label: 'Div Growth 5y', value: a.metrics?.divGrowth5y || '—', color: 'var(--accL)' },
-  ];
-
-  document.getElementById('ai-metrics-grid').innerHTML = metrics.map(m =>
-    `<div class="card-sm" style="${m.big?'border-left:3px solid '+m.color+';':''}">
-      <div class="kl">${m.label}</div>
-      <div class="kv" style="font-size:${m.big?'20px':'17px'};color:${m.color||'var(--ink)'}">${m.value}</div>
-    </div>`
-  ).join('');
-
-  document.getElementById('ai-analysis-text').textContent = a.analysis || '—';
-
-  if(a.keyRisks?.length){
-    const risksHtml = '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--bd2)"><div class="st" style="margin-top:0">Riesgos principales</div>'
-      + a.keyRisks.map(r => `<div style="font-size:12px;color:var(--redL);margin-bottom:4px">⚠ ${r}</div>`).join('')
-      + '</div>';
-    document.getElementById('ai-analysis-text').innerHTML =
-      '<span style="white-space:pre-wrap">' + (a.analysis||'') + '</span>' + risksHtml;
-  }
-
-  // SEC data section
-  if(secData){
-    const secCard = document.getElementById('ai-sec-card');
-    const secEl = document.getElementById('ai-sec-data');
-    secCard.style.display = 'block';
-    const lines = [];
-    if(secData.revenue) lines.push(`Ingresos: $${(secData.revenue.value/1e9).toFixed(2)}B (${secData.revenue.form})`);
-    if(secData.netIncome) lines.push(`Beneficio neto: $${(secData.netIncome.value/1e9).toFixed(2)}B`);
-    if(secData.operatingCashFlow) lines.push(`Cash Flow operativo: $${(secData.operatingCashFlow.value/1e9).toFixed(2)}B`);
-    if(secData.capex) lines.push(`CapEx: $${(Math.abs(secData.capex.value)/1e9).toFixed(2)}B`);
-    if(secData.fcf) lines.push(`FCF: $${(secData.fcf.value/1e9).toFixed(2)}B`);
-    if(secData.dividendsPaid) lines.push(`Dividendos pagados: $${(Math.abs(secData.dividendsPaid.value)/1e9).toFixed(2)}B`);
-    if(secData.fcfPayoutRatio) lines.push(`FCF Payout: ${secData.fcfPayoutRatio.value}`);
-    if(secData.longTermDebt) lines.push(`Deuda LP: $${(secData.longTermDebt.value/1e9).toFixed(2)}B`);
-    if(secData.cash) lines.push(`Caja: $${(secData.cash.value/1e9).toFixed(2)}B`);
-    if(secData.netDebtEbitda) lines.push(`Deuda neta/EBITDA: ${secData.netDebtEbitda.value}`);
-    secEl.innerHTML = lines.map(l => `<div>${l}</div>`).join('');
-  }
-
-  // Show "Add to radar" button
-  document.getElementById('ai-add-radar-btn').style.display = 'inline-block';
-
-  // Scroll to result
-  document.getElementById('ai-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function addAnalysisToRadar(){
-  if(!aiCurrentAnalysis) return;
-  const a = aiCurrentAnalysis;
-  const ticker = a.ticker;
-  // Check if already in RADAR
-  const inRadar = RADAR.find(r => r.ticker === ticker);
-  if(inRadar){
-    // Update via override
-    if(!S.radarOverrides) S.radarOverrides = {};
-    S.radarOverrides[ticker] = {
-      targetPrice: a.targetPrice || inRadar.targetPrice,
-      yield: a.yield || inRadar.yield,
-      note: a.note || inRadar.note,
-      metrics: a.metrics || inRadar.metrics
-    };
-    saveState();
-    toast('✓ ' + ticker + ' actualizada en el radar con datos del análisis');
-  } else {
-    // Add as custom
-    if(!S.customRadar) S.customRadar = [];
-    const existing = S.customRadar.findIndex(r => r.ticker === ticker);
-    const entry = {
-      tier: a.tier || 'B',
-      ticker,
-      name: a.name || ticker,
-      sector: a.sector || 'Otro',
-      country: a.country || '',
-      yield: a.yield || '0%',
-      freq: 'Trimestral',
-      streak: a.streak || 0,
-      targetPrice: a.targetPrice || 0,
-      currency: a.currency || '$',
-      metrics: a.metrics || {},
-      note: a.note || ''
-    };
-    if(existing >= 0) S.customRadar[existing] = entry;
-    else S.customRadar.push(entry);
-    saveState();
-    toast('✓ ' + ticker + ' añadida al radar con datos del análisis');
-  }
-  go('radar');
-}
-
-function renderAIHistory(){
-  const el = document.getElementById('ai-history-list');
-  if(!el) return;
-  const hist = S.aiHistory || [];
-  if(!hist.length){ el.innerHTML = '<span style="font-size:12px;color:var(--ink3)">Sin análisis recientes</span>'; return; }
-  el.innerHTML = hist.slice(0,10).map(h =>
-    `<button class="pill" onclick="document.getElementById(\'ai-ticker\').value=\'${h.ticker}\';analyzeCompany()"
-      style="font-size:11px" title="${h.name||h.ticker}">
-      ${h.ticker}
-    </button>`
-  ).join('');
 }
 
 
