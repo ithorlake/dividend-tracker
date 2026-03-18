@@ -171,6 +171,7 @@ table.t tr:hover td{background:var(--bg3)}
       <button class="tab" onclick="go('radar')">Radar</button>
       <button class="tab" onclick="go('charts')">Gráficas</button>
       <button class="tab" onclick="go('import')">Importar IB</button>
+      <button class="tab" onclick="go('analysis')">🤖 Analizar</button>
       <button class="tab" onclick="go('manual')">📖 Ayuda</button>
     </div>
     <div class="nav-btns">
@@ -225,11 +226,12 @@ table.t tr:hover td{background:var(--bg3)}
 
   <!-- EFECTIVO STRIP -->
   <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-    <div class="card-sm" style="flex:1;min-width:120px;border-left:3px solid var(--accL)"><div class="kl">Acciones</div><div class="kv" style="font-size:17px" id="k-stk">€0</div></div>
-    <div class="card-sm" style="flex:1;min-width:120px;border-left:3px solid var(--blueL)"><div class="kl">Efectivo EUR</div><div class="kv" style="font-size:17px" id="k-ceur">€0</div></div>
-    <div class="card-sm" style="flex:1;min-width:120px;border-left:3px solid var(--blueL)"><div class="kl">Efectivo USD</div><div class="kv" style="font-size:17px" id="k-cusd">$0</div></div>
-    <div class="card-sm" style="flex:1;min-width:120px;border-left:3px solid var(--blueL)"><div class="kl">Efectivo PLN</div><div class="kv" style="font-size:17px" id="k-cpln">zł0</div></div>
-    <div class="card-sm" style="display:flex;align-items:center;justify-content:center;min-width:70px">
+    <div class="card-sm" style="flex:1;min-width:100px;border-left:3px solid var(--accL)"><div class="kl">Acciones</div><div class="kv" style="font-size:17px" id="k-stk">€0</div></div>
+    <div class="card-sm" style="flex:1;min-width:100px;border-left:3px solid var(--blueL)"><div class="kl">Efectivo EUR</div><div class="kv" style="font-size:17px" id="k-ceur">€0</div></div>
+    <div class="card-sm" style="flex:1;min-width:100px;border-left:3px solid var(--blueL)"><div class="kl">Efectivo USD</div><div class="kv" style="font-size:17px" id="k-cusd">$0</div></div>
+    <div class="card-sm" style="flex:1;min-width:100px;border-left:3px solid var(--blueL)"><div class="kl">Efectivo PLN</div><div class="kv" style="font-size:17px" id="k-cpln">zł0</div></div>
+    <div class="card-sm" style="flex:1;min-width:100px;border-left:3px solid var(--blueL)" id="k-cgbp-card" style="display:none"><div class="kl">Efectivo GBP</div><div class="kv" style="font-size:17px" id="k-cgbp">£0</div></div>
+    <div class="card-sm" style="display:flex;align-items:center;justify-content:center;min-width:60px">
       <button class="btn bg2 sm" onclick="openModal('cash-ov')">✎</button>
     </div>
   </div>
@@ -311,6 +313,16 @@ table.t tr:hover td{background:var(--bg3)}
       <button class="btn bp" onclick="openTrade('BUY')">+ Compra / Venta</button>
     </div>
   </div>
+  <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
+    <div class="pills" id="trades-type-pills">
+      <button class="pill on" onclick="setTradeFilter('all',this)">Todas</button>
+      <button class="pill" onclick="setTradeFilter('BUY',this)">Compras</button>
+      <button class="pill" onclick="setTradeFilter('SELL',this)">Ventas</button>
+      <button class="pill" onclick="setTradeFilter('DIV',this)">Dividendos</button>
+    </div>
+    <input id="trades-search" type="text" placeholder="Filtrar por ticker..." oninput="renderTrades()"
+      style="padding:5px 10px;border:1px solid var(--bd);border-radius:20px;background:var(--bg3);color:var(--ink);font-size:12px;font-family:var(--font);width:160px">
+  </div>
   <div class="card"><div id="trades-table"></div></div>
 </div>
 
@@ -383,7 +395,10 @@ table.t tr:hover td{background:var(--bg3)}
 <div id="p-radar" class="panel">
   <div class="abar">
     <div class="atitle">Empresas en vigilancia</div>
-    <button class="btn bp" onclick="openRadarForm(-1)">+ Añadir empresa</button>
+    <div style="display:flex;gap:6px">
+      <button class="btn bg2" id="btn-radar-refresh" onclick="refreshRadarPrices()">↻ Precios radar</button>
+      <button class="btn bp" onclick="openRadarForm(-1)">+ Añadir empresa</button>
+    </div>
   </div>
   <div class="pills" style="margin-bottom:8px" id="tier-pills">
     <button class="pill on" data-tier="all" onclick="filterTier(this)">Todas (<span id="radar-cnt">49</span>)</button>
@@ -539,11 +554,96 @@ table.t tr:hover td{background:var(--bg3)}
     <div class="ms-b"><strong style="color:var(--ink)">↓ Backup</strong>: descarga un JSON con toda tu cartera. Guárdalo en Google Drive. Hazlo al menos mensualmente. <strong style="color:var(--ink)">Cargar JSON</strong> en Importar IB: restaura cualquier backup. <strong style="color:var(--redL)">⚠ Borrar todo</strong>: elimina todos los datos del navegador y recarga con los datos IB originales — irreversible si no tienes backup.</div>
   </div>
 
+  <div id="m13" class="card" style="margin-bottom:10px">
+    <div class="ms-t">⑬ Analizar empresa con IA</div>
+    <div class="ms-b">La pestaña <strong style="color:var(--ink)">🤖 Analizar</strong> permite analizar cualquier empresa cotizada en NYSE/NASDAQ usando inteligencia artificial (Claude) combinada con datos reales de la SEC EDGAR. Introduce el ticker, pulsa ⚡ Analizar y en 10-20 segundos obtendrás: FCF Payout real, Deuda/EBITDA, sostenibilidad del dividendo, tier DGI recomendado, precio objetivo razonado y análisis completo en español. El botón <strong style="color:var(--ink)">+ Añadir al Radar</strong> incorpora automáticamente la empresa al radar con todas sus métricas calculadas. <strong style="color:var(--goldL)">Requiere conexión a Claude</strong> — funciona cuando la app está abierta dentro de claude.ai con tu sesión activa. Para empresas europeas o sin datos en la SEC, la IA analiza con su conocimiento de entrenamiento.</div>
+  </div>
+
   <div style="text-align:center;padding:16px;color:var(--ink3);font-size:11px;border-top:1px solid var(--bd);margin-top:6px">
     DividendTrack v6 · No es asesoramiento financiero · Datos y precios objetivo orientativos basados en análisis a agosto 2025 · Verifica siempre antes de invertir
   </div>
 </div>
 
+
+<!-- ANÁLISIS CON IA -->
+<div id="p-analysis" class="panel">
+  <div class="abar">
+    <div class="atitle">🤖 Analizar empresa con IA</div>
+    <div style="font-size:12px;color:var(--ink3)">Powered by Claude · SEC EDGAR</div>
+  </div>
+
+  <!-- INPUT -->
+  <div class="card" style="margin-bottom:14px">
+    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+      <div style="flex:1;min-width:140px">
+        <label style="font-size:10px;color:var(--ink3);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px;font-weight:500">Ticker</label>
+        <input id="ai-ticker" type="text" placeholder="Ej: JNJ, KO, ABBV..."
+          style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:var(--rs);background:var(--bg3);color:var(--ink);font-size:15px;font-family:var(--mono);font-weight:600;letter-spacing:1px"
+          oninput="this.value=this.value.toUpperCase()"
+          onkeydown="if(event.key==='Enter')analyzeCompany()">
+      </div>
+      <div style="flex:2;min-width:200px">
+        <label style="font-size:10px;color:var(--ink3);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px;font-weight:500">Contexto adicional (opcional)</label>
+        <input id="ai-context" type="text" placeholder="Ej: sector utilities, comparo con NEE..."
+          style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:var(--rs);background:var(--bg3);color:var(--ink);font-size:13px;font-family:var(--font)">
+      </div>
+      <button class="btn bp" onclick="analyzeCompany()" id="ai-btn" style="padding:9px 22px;white-space:nowrap">
+        ⚡ Analizar
+      </button>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--ink3);line-height:1.7">
+      Introduce el ticker de cualquier empresa cotizada en NYSE/NASDAQ. La IA consultará la SEC EDGAR para obtener los datos financieros reales del último informe y calculará: FCF Payout, Deuda/EBITDA, sostenibilidad del dividendo, valoración y recomendación DGI.
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div id="ai-loading" style="display:none;text-align:center;padding:40px">
+    <div style="font-size:28px;margin-bottom:12px;animation:pulse 1.5s infinite">⚡</div>
+    <div style="font-size:14px;color:var(--ink2);font-weight:500" id="ai-loading-msg">Consultando SEC EDGAR...</div>
+    <div style="font-size:12px;color:var(--ink3);margin-top:6px">Esto puede tardar 10-20 segundos</div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="ai-result" style="display:none">
+    <!-- Header empresa -->
+    <div class="card" style="margin-bottom:12px;border-left:3px solid var(--accL)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+            <span class="tkr" style="font-size:20px" id="ai-res-ticker">—</span>
+            <span style="font-size:14px;color:var(--ink2)" id="ai-res-name">—</span>
+          </div>
+          <div style="font-size:12px;color:var(--ink3)" id="ai-res-sector">—</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn bp sm" onclick="addAnalysisToRadar()" id="ai-add-radar-btn" style="display:none">+ Añadir al Radar</button>
+          <button class="btn bg2 sm" onclick="document.getElementById('ai-result').style.display='none'">✕ Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Métricas clave -->
+    <div class="g4" style="margin-bottom:12px" id="ai-metrics-grid"></div>
+
+    <!-- Análisis completo -->
+    <div class="card" style="margin-bottom:12px">
+      <div class="st">Análisis completo</div>
+      <div id="ai-analysis-text" style="font-size:13px;color:var(--ink2);line-height:1.9;white-space:pre-wrap"></div>
+    </div>
+
+    <!-- Datos SEC -->
+    <div class="card" id="ai-sec-card" style="margin-bottom:12px;display:none">
+      <div class="st">Datos financieros SEC EDGAR</div>
+      <div id="ai-sec-data" style="font-size:12px;color:var(--ink3);font-family:var(--mono);line-height:2"></div>
+    </div>
+  </div>
+
+  <!-- HISTORIAL -->
+  <div id="ai-history-section" style="margin-top:16px">
+    <div class="st">Análisis recientes</div>
+    <div id="ai-history-list" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+  </div>
+</div>
 </div><!-- end .app -->
 
 <!-- TOAST -->
@@ -592,8 +692,8 @@ table.t tr:hover td{background:var(--bg3)}
   <div class="modal">
     <div class="mt" id="trade-title">Nueva operación</div>
     <div class="fg2">
-      <div class="fr"><label>Ticker</label><input id="t-ticker" type="text" placeholder="O" oninput="this.value=this.value.toUpperCase()"></div>
-      <div class="fr"><label>Nombre empresa</label><input id="t-name" type="text" placeholder="Realty Income"></div>
+      <div class="fr"><label>Ticker</label><input id="t-ticker" type="text" placeholder="O" oninput="this.value=this.value.toUpperCase();autoFillName(this.value)"></div>
+      <div class="fr"><label>Nombre empresa <span id="t-name-status" style="color:var(--accL);font-size:10px"></span></label><input id="t-name" type="text" placeholder="Realty Income"></div>
       <div class="fr"><label>Tipo</label>
         <select id="t-type">
           <option value="BUY">Compra</option>
@@ -717,6 +817,34 @@ table.t tr:hover td{background:var(--bg3)}
   </div>
 </div>
 
+<!-- RADAR EDIT MODAL -->
+<div id="redit-ov" class="ov" onclick="if(event.target===this)closeModal('redit-ov')">
+  <div class="modal">
+    <div class="mt" id="redit-title">Editar empresa</div>
+    <input type="hidden" id="re-ticker">
+    <div style="background:var(--bg3);border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:var(--ink3)">
+      Los cambios se guardan localmente y sobrescriben los datos pre-cargados para esta empresa.
+    </div>
+    <div class="fg2">
+      <div class="fr"><label>Precio actual</label><input id="re-price" type="number" step="0.01" placeholder="Cotización actual"></div>
+      <div class="fr"><label>Precio objetivo</label><input id="re-target" type="number" step="0.01"></div>
+      <div class="fr"><label>Yield actual</label><input id="re-yield" type="text" placeholder="3.2%"></div>
+      <div class="fr"><label>Veredicto</label>
+        <select id="re-verdict"><option>COMPRAR</option><option>ACUMULAR</option><option>VIGILAR</option><option>EVITAR</option></select>
+      </div>
+      <div class="fr"><label>P/E</label><input id="re-pe" type="text" placeholder="20x"></div>
+      <div class="fr"><label>FCF Payout</label><input id="re-fcf" type="text" placeholder="60%"></div>
+      <div class="fr"><label>Deuda/EBITDA</label><input id="re-debt" type="text" placeholder="2.0x"></div>
+      <div class="fr"><label>Div Growth 5y</label><input id="re-dg" type="text" placeholder="7%"></div>
+    </div>
+    <div class="fr"><label>Nota / tesis</label><textarea id="re-note" rows="3"></textarea></div>
+    <div class="brow">
+      <button class="btn bg2" onclick="closeModal('redit-ov')">Cancelar</button>
+      <button class="btn bp" onclick="saveRadarEdit()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- RADAR FORM MODAL -->
 <div id="radar-ov" class="ov" onclick="if(event.target===this)closeModal('radar-ov')">
   <div class="modal">
@@ -752,11 +880,11 @@ const DEF = {
   cash:{EUR:390,USD:40.65,PLN:56.82,GBP:0},
   goal:1500, cur:'EUR',
   posMeta:{}, hiddenRadar:[], customRadar:[],
-  navHistory:[], secMetrics:{}, secDate:''
+  navHistory:[], secMetrics:{}, secDate:'', radarOverrides:{}, aiHistory:[]
 };
 let S = JSON.parse(JSON.stringify(DEF));
 const SK = 'dtv6';
-const DATA_VERSION = '20260318_v4'; // bump this to force reset
+const DATA_VERSION = '20260318_v8'; // bump this to force reset
 function loadState(){
   try{
     const d=localStorage.getItem(SK);
@@ -920,7 +1048,7 @@ function go(id){
   if(!panel){console.warn("Panel not found: p-"+id);return;}
   panel.classList.add("on");
   const tabs=document.querySelectorAll(".tab");
-  const names=["dashboard","positions","trades","calendar","projection","radar","charts","import","manual"];
+  const names=["dashboard","positions","trades","calendar","projection","radar","charts","import","analysis","manual"];
   const idx=names.indexOf(id);
   if(tabs[idx])tabs[idx].classList.add("on");
   if(id==="dashboard")renderDashboard();
@@ -930,6 +1058,7 @@ function go(id){
   if(id==="projection")calcProj();
   if(id==="radar")renderRadar();
   if(id==="charts")renderCharts();
+  if(id==="analysis"){renderAIHistory();}
 }
 
 // ─── MODAL ───────────────────────────────────────────
@@ -1115,6 +1244,13 @@ function renderDashboard(){
   document.getElementById("k-ceur").textContent="€"+(S.cash.EUR||0).toLocaleString("es-ES");
   document.getElementById("k-cusd").textContent="$"+fn(S.cash.USD||0,2);
   document.getElementById("k-cpln").textContent="zł"+fn(S.cash.PLN||0,2);
+  const gbpCard=document.getElementById("k-cgbp-card");
+  const gbpEl=document.getElementById("k-cgbp");
+  if(gbpCard&&gbpEl){
+    const gbpVal=S.cash.GBP||0;
+    gbpCard.style.display=gbpVal>0?"":"none";
+    gbpEl.textContent="£"+fn(gbpVal,2);
+  }
 
   // Date
   document.getElementById("d-date").textContent=new Date().toLocaleDateString("es-ES",{day:"numeric",month:"short",year:"numeric"});
@@ -1377,11 +1513,25 @@ function renderPositions(){
 }
 
 // ─── RENDER TRADES ───────────────────────────────────
+let activeTradeFilter='all';
+function setTradeFilter(f,btn){
+  activeTradeFilter=f;
+  document.querySelectorAll('#trades-type-pills .pill').forEach(p=>p.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  renderTrades();
+}
 function renderTrades(){
   const el=document.getElementById("trades-table");
   if(!el)return;
-  const all=[...S.trades.map(t=>({...t,_type:"trade"})),...S.dividends.map(d=>({...d,_type:"div"}))].sort((a,b)=>b.date.localeCompare(a.date));
-  if(!all.length){el.innerHTML='<div class="empty"><div class="ei">📋</div><p>Sin operaciones registradas.</p></div>';return;}
+  const search=(document.getElementById('trades-search')?.value||'').toUpperCase().trim();
+  let all=[...S.trades.map(t=>({...t,_type:"trade"})),...S.dividends.map(d=>({...d,_type:"div"}))].sort((a,b)=>b.date.localeCompare(a.date));
+  // Apply type filter
+  if(activeTradeFilter==='BUY') all=all.filter(t=>t._type==='trade'&&t.type==='BUY');
+  else if(activeTradeFilter==='SELL') all=all.filter(t=>t._type==='trade'&&t.type==='SELL');
+  else if(activeTradeFilter==='DIV') all=all.filter(t=>t._type==='div');
+  // Apply ticker search
+  if(search) all=all.filter(t=>(t.ticker||'').toUpperCase().includes(search));
+  if(!all.length){el.innerHTML='<div class="empty"><div class="ei">📋</div><p>Sin operaciones con ese filtro.</p></div>';return;}
   el.innerHTML=`<div class="tw"><table class="t">
     <thead><tr><th>Fecha</th><th>Tipo</th><th>Ticker</th><th>Empresa</th><th class="nr">Acciones</th><th class="nr">Precio</th><th class="nr">Total</th><th class="nr">Comisión</th><th></th></tr></thead>
     <tbody>${all.map(t=>{
@@ -1597,7 +1747,9 @@ function renderRadar(){
   if(!filtered.length){document.getElementById("radar-grid").innerHTML='<div class="empty" style="grid-column:1/-1"><div class="ei">🔍</div><p>No hay empresas con ese filtro.</p></div>';return;}
 
   document.getElementById("radar-grid").innerHTML=filtered.map((r,i)=>{
-    const m=r.metrics||{};
+    const ov=(S.radarOverrides||{})[r.ticker]||{};
+    const m={...(r.metrics||{}),...(ov.metrics||{})};
+    const effectiveTarget=ov.targetPrice!=null&&ov.targetPrice>0?ov.targetPrice:(r.targetPrice||0);
     const sec=(S.secMetrics||{})[r.ticker]||{};
     const fcfDisplay=sec.fcfPayout||m.fcfPayout||"—";
     const debtDisplay=sec.debtEbitda||m.debtEbitda||"—";
@@ -1606,14 +1758,14 @@ function renderRadar(){
     const fcfCol=fcfPct>85?"var(--redL)":fcfPct>65?"var(--goldL)":"var(--greenL)";
     const vColor=m.verdict==="COMPRAR"?"var(--greenL)":m.verdict==="ACUMULAR"?"var(--goldL)":m.verdict==="EVITAR"?"var(--redL)":"var(--ink3)";
     const cp=S.prices[r.ticker];
-    const t=parseFloat(r.targetPrice)||0;
+    const t=parseFloat(effectiveTarget)||0;
     const inZone=cp&&t>0&&cp<=t;
     const isCustom=custom.includes(r);
     return `<div class="rc${inZone?" inzone":""}">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <span class="tier t${r.tier}">Tier ${r.tier}${isCustom?" · Custom":""}</span>
         <div style="display:flex;gap:4px">
-          ${isCustom?`<button class="btn bg2 sm" onclick="openRadarForm(${S.customRadar.indexOf(r)})" style="font-size:10px">✎</button>`:""}
+          <button class="btn bg2 sm" onclick="openRadarEdit('${r.ticker}')" style="font-size:10px" title="Editar">✎</button>
           <button class="btn bg2 sm" onclick="hideRadar('${r.ticker}')" style="font-size:10px;color:var(--ink3)" title="Ocultar">✕</button>
         </div>
       </div>
@@ -1622,7 +1774,10 @@ function renderRadar(){
         <span style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accL)">${r.yield}</span>
       </div>
       <div style="font-size:13px;color:var(--ink2);margin-bottom:2px">${r.name}</div>
-      <div style="font-size:11px;color:var(--ink3);margin-bottom:8px">${r.sector} · ${r.freq} · ${r.streak}a streak</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:11px;color:var(--ink3)">${r.sector} · ${r.freq} · ${r.streak}a streak</span>
+        ${cp ? `<span style="font-family:var(--mono);font-size:13px;font-weight:600;color:${inZone?"var(--greenL)":"var(--ink2)"}">${r.currency||"$"}${fn(cp,2)}</span>` : `<span style="font-size:11px;color:var(--ink3)" title="Sin precio — pulsa Refresh">? precio</span>`}
+      </div>
       ${m.pe?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--bd2)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <span style="font-size:9px;color:var(--ink3);letter-spacing:1px;text-transform:uppercase">Métricas financieras</span>
@@ -1722,6 +1877,29 @@ function renderCharts(){
 }
 
 // ─── TRADE FORM ──────────────────────────────────────
+async function autoFillName(ticker){
+  if(!ticker||ticker.length<1)return;
+  const nameEl=document.getElementById('t-name');
+  const status=document.getElementById('t-name-status');
+  if(!nameEl||!status)return;
+  // Check RADAR first
+  const radarMatch=[...RADAR,...(S.customRadar||[])].find(r=>r.ticker===ticker);
+  if(radarMatch){nameEl.value=radarMatch.name;status.textContent='';return;}
+  // Try Yahoo Finance
+  if(ticker.length<2)return;
+  status.textContent='⟳ buscando...';
+  try{
+    const url=`https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
+    const proxy=`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    const res=await fetch(proxy,{signal:AbortSignal.timeout(5000)});
+    const data=await res.json();
+    const parsed=JSON.parse(data.contents);
+    const longName=parsed?.chart?.result?.[0]?.meta?.longName||parsed?.chart?.result?.[0]?.meta?.shortName;
+    if(longName){nameEl.value=longName;status.textContent='✓';}
+    else status.textContent='';
+  }catch(e){status.textContent='';}
+}
+
 function openTrade(type){
   document.getElementById("trade-title").textContent=type==="BUY"?"Nueva compra":"Nueva venta";
   document.getElementById("t-type").value=type;
@@ -1792,6 +1970,57 @@ function saveEditPos(){
 }
 
 // ─── RADAR FORM ──────────────────────────────────────
+function openRadarEdit(ticker){
+  const all=[...RADAR,...(S.customRadar||[])];
+  const r=all.find(x=>x.ticker===ticker);
+  if(!r)return;
+  const ov=(S.radarOverrides||{})[ticker]||{};
+  const m=r.metrics||{};
+  const om=ov.metrics||{};
+  document.getElementById('redit-title').textContent='✎ '+ticker+' — '+r.name;
+  document.getElementById('re-ticker').value=ticker;
+  document.getElementById('re-price').value=S.prices[ticker]||'';
+  document.getElementById('re-target').value=ov.targetPrice!=null?ov.targetPrice:(r.targetPrice||'');
+  document.getElementById('re-yield').value=ov.yield||r.yield||'';
+  document.getElementById('re-verdict').value=om.verdict||m.verdict||'VIGILAR';
+  document.getElementById('re-pe').value=om.pe||m.pe||'';
+  document.getElementById('re-fcf').value=om.fcfPayout||m.fcfPayout||'';
+  document.getElementById('re-debt').value=om.debtEbitda||m.debtEbitda||'';
+  document.getElementById('re-dg').value=om.divGrowth5y||m.divGrowth5y||'';
+  document.getElementById('re-note').value=ov.note!=null?ov.note:(r.note||'');
+  openModal('redit-ov');
+}
+
+function saveRadarEdit(){
+  const ticker=document.getElementById('re-ticker').value;
+  if(!ticker)return;
+  if(!S.radarOverrides)S.radarOverrides={};
+  const price=parseFloat(document.getElementById('re-price').value);
+  if(price>0){
+    if(!S.prices)S.prices={};
+    if(!S.priceDates)S.priceDates={};
+    S.prices[ticker]=price;
+    S.priceDates[ticker]=todayISO();
+  }
+  S.radarOverrides[ticker]={
+    targetPrice:parseFloat(document.getElementById('re-target').value)||0,
+    yield:document.getElementById('re-yield').value,
+    note:document.getElementById('re-note').value,
+    metrics:{
+      verdict:document.getElementById('re-verdict').value,
+      pe:document.getElementById('re-pe').value,
+      fcfPayout:document.getElementById('re-fcf').value,
+      debtEbitda:document.getElementById('re-debt').value,
+      divGrowth5y:document.getElementById('re-dg').value,
+    }
+  };
+  saveState();
+  closeModal('redit-ov');
+  renderRadar();
+  renderDashboard();
+  toast('✓ '+ticker+' actualizada');
+}
+
 function openRadarForm(idx){
   document.getElementById("rf-idx").value=idx;
   if(idx>=0&&S.customRadar[idx]){
@@ -1802,261 +2031,4 @@ function openRadarForm(idx){
     document.getElementById("rf-freq").value=r.freq||"Trimestral";
     document.getElementById("rf-target").value=r.targetPrice||"";
     document.getElementById("rf-cur").value=r.currency||"$";
-    if(r.metrics){document.getElementById("rf-pe").value=r.metrics.pe||"";document.getElementById("rf-fcf").value=r.metrics.fcfPayout||"";document.getElementById("rf-debt").value=r.metrics.debtEbitda||"";document.getElementById("rf-dg").value=r.metrics.divGrowth5y||"";document.getElementById("rf-verdict").value=r.metrics.verdict||"VIGILAR";}
-  }else{
-    document.getElementById("radar-form-title").textContent="Añadir empresa";
-    ["rf-ticker","rf-name","rf-sector","rf-country","rf-yield","rf-note","rf-pe","rf-fcf","rf-debt","rf-dg"].forEach(id=>document.getElementById(id).value="");
-    document.getElementById("rf-streak").value=0;
-    document.getElementById("rf-target").value="";
-  }
-  openModal("radar-ov");
-}
-function saveRadarForm(){
-  const ticker=document.getElementById("rf-ticker").value.trim().toUpperCase();
-  if(!ticker){toast("⚠ Introduce el ticker");return;}
-  const r={tier:document.getElementById("rf-tier").value,ticker,name:document.getElementById("rf-name").value||ticker,sector:document.getElementById("rf-sector").value||"Otro",country:document.getElementById("rf-country").value||"",yield:document.getElementById("rf-yield").value||"0%",freq:document.getElementById("rf-freq").value,streak:parseInt(document.getElementById("rf-streak").value)||0,targetPrice:parseFloat(document.getElementById("rf-target").value)||0,currency:document.getElementById("rf-cur").value,metrics:{pe:document.getElementById("rf-pe").value,fcfPayout:document.getElementById("rf-fcf").value,debtEbitda:document.getElementById("rf-debt").value,divGrowth5y:document.getElementById("rf-dg").value,verdict:document.getElementById("rf-verdict").value},note:document.getElementById("rf-note").value};
-  const idx=parseInt(document.getElementById("rf-idx").value);
-  if(!S.customRadar)S.customRadar=[];
-  if(idx>=0)S.customRadar[idx]=r;else S.customRadar.push(r);
-  saveState();closeModal("radar-ov");renderRadar();
-  toast("✓ Empresa guardada en radar: "+ticker);
-}
-
-// ─── PRICES + SEC EDGAR ──────────────────────────────
-async function refreshPrices(){
-  const btn=document.getElementById("btn-refresh");
-  if(btn){btn.textContent="⟳ ...";btn.disabled=true;}
-  const pos=getPositions();
-  const usTickers=[...new Set([...pos.filter(p=>["USD","CAD"].includes(p.currency)).map(p=>p.ticker),...RADAR.filter(r=>r.targetPrice&&["$"].includes(r.currency)).map(r=>r.ticker)])];
-  const eurTickers=pos.filter(p=>!["USD","CAD"].includes(p.currency)).map(p=>p.ticker);
-  let updated=0,failed=[];
-  if(!S.priceDates)S.priceDates={};
-  const today=todayISO();
-
-  for(const ticker of usTickers){
-    try{
-      const url=`https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
-      const proxies=[`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`];
-      let price=null;
-      for(const proxy of proxies){
-        try{
-          const res=await fetch(proxy,{signal:AbortSignal.timeout(7000)});
-          const data=await res.json();
-          const raw=data.contents||data;
-          const parsed=typeof raw==="string"?JSON.parse(raw):raw;
-          price=parsed?.chart?.result?.[0]?.meta?.regularMarketPrice;
-          if(price&&price>0)break;
-        }catch(pe){continue;}
-      }
-      if(price&&price>0){S.prices[ticker]=Math.round(price*100)/100;S.priceDates[ticker]=today;updated++;}
-      else failed.push(ticker);
-    }catch(e){failed.push(ticker);}
-  }
-
-  S.priceDate=new Date().toLocaleDateString("es-ES");
-  saveNavSnapshot();saveState();renderDashboard();renderPositions();renderOportunidades();
-  if(btn){btn.textContent="↻ Refresh";btn.disabled=false;}
-  let msg="✓ "+updated+" precios actualizados";
-  if(failed.length)msg+=" · Sin precio: "+failed.slice(0,4).join(", ");
-  toast(msg);
-  if(eurTickers.length)setTimeout(()=>openQuickPrices(eurTickers),600);
-  fetchSECFinancials();
-}
-
-function openQuickPrices(tickers){
-  const fields=document.getElementById("qp-fields");
-  if(!fields)return;
-  fields.innerHTML=tickers.map(t=>`<div class="fr"><label>${t} — precio actual (${SYM[getPositions().find(p=>p.ticker===t)?.currency||"EUR"]||""})</label><input id="qp-${t}" type="number" step="0.001" placeholder="${S.prices[t]||""}" value="${S.prices[t]||""}"></div>`).join("");
-  openModal("qp-ov");
-  window._qpTickers=tickers;
-}
-function saveQuickPrices(){
-  const today=todayISO();if(!S.priceDates)S.priceDates={};
-  (window._qpTickers||[]).forEach(t=>{const v=parseFloat(document.getElementById("qp-"+t)?.value);if(v&&v>0){S.prices[t]=v;S.priceDates[t]=today;}});
-  saveState();closeModal("qp-ov");renderDashboard();renderPositions();renderOportunidades();
-  toast("✓ Precios manuales guardados");
-}
-
-let secTickerMap=null;
-async function fetchSECFinancials(){
-  const usTickers=RADAR.filter(r=>["🇺🇸","🇮🇪"].includes(r.country||"")&&r.metrics).map(r=>r.ticker);
-  if(!usTickers.length)return;
-  if(!secTickerMap){
-    try{
-      const proxy=`https://api.allorigins.win/get?url=${encodeURIComponent("https://www.sec.gov/files/company_tickers.json")}`;
-      const res=await fetch(proxy,{signal:AbortSignal.timeout(10000)});
-      const data=await res.json();
-      const parsed=JSON.parse(data.contents);
-      secTickerMap={};
-      Object.values(parsed).forEach(co=>{secTickerMap[co.ticker]=String(co.cik_str).padStart(10,"0");});
-    }catch(e){return;}
-  }
-  if(!S.secMetrics)S.secMetrics={};
-  let fetched=0;
-  for(const ticker of usTickers.slice(0,12)){
-    const cik=secTickerMap[ticker];if(!cik)continue;
-    try{
-      const url=`https://data.sec.gov/api/xbrl/companyfacts/CIK${cik}.json`;
-      const proxy=`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-      const res=await fetch(proxy,{signal:AbortSignal.timeout(12000)});
-      const data=await res.json();
-      const facts=JSON.parse(data.contents);
-      const fin=extractSECMetrics(facts);
-      if(fin){S.secMetrics[ticker]=fin;fetched++;}
-      await new Promise(r=>setTimeout(r,350));
-    }catch(e){}
-  }
-  if(!fetched)return;
-  S.secDate=new Date().toLocaleDateString("es-ES");
-  saveState();
-  const sd=document.getElementById("d-secdate");
-  if(sd)sd.textContent="· SEC "+S.secDate;
-  const rp=document.getElementById("p-radar");
-  if(rp&&rp.classList.contains("on"))renderRadar();
-  toast("✓ SEC: métricas actualizadas ("+fetched+" empresas)");
-}
-
-function extractSECMetrics(facts){
-  try{
-    const us=facts?.facts?.["us-gaap"]||{};
-    function latestTTM(concept){
-      const data=us[concept]?.units?.USD;if(!data)return null;
-      const annual=data.filter(d=>d.form==="10-K"&&d.val!=null).sort((a,b)=>b.end?.localeCompare(a.end));
-      if(annual.length)return annual[0].val;
-      const q=data.filter(d=>d.form==="10-Q"&&d.val!=null).sort((a,b)=>b.end?.localeCompare(a.end));
-      return q.length?q.slice(0,4).reduce((s,d)=>s+d.val,0):null;
-    }
-    const ocf=latestTTM("NetCashProvidedByUsedInOperatingActivities");
-    const capex=latestTTM("PaymentsToAcquirePropertyPlantAndEquipment");
-    const divsPaid=latestTTM("PaymentsOfDividends")||latestTTM("PaymentsOfDividendsCommonStock");
-    const ltd=latestTTM("LongTermDebt")||latestTTM("LongTermDebtNoncurrent");
-    const cash=latestTTM("CashAndCashEquivalentsAtCarryingValue");
-    const ebit=latestTTM("OperatingIncomeLoss");
-    const fcf=ocf&&capex?ocf-Math.abs(capex):null;
-    const fcfPayout=fcf&&divsPaid&&fcf>0?Math.round(Math.abs(divsPaid)/fcf*100)+"%":null;
-    const netDebt=ltd&&cash?ltd-cash:ltd;
-    const debtEbitda=netDebt&&ebit&&Math.abs(ebit)>0?(netDebt/Math.abs(ebit)).toFixed(1)+"x":null;
-    const result={lastUpdated:todayISO()};
-    if(fcfPayout)result.fcfPayout=fcfPayout;
-    if(debtEbitda)result.debtEbitda=debtEbitda;
-    return Object.keys(result).length>1?result:null;
-  }catch(e){return null;}
-}
-
-// ─── IMPORT/EXPORT ───────────────────────────────────
-function exportData(){
-  const data=JSON.stringify(S,null,2);
-  const blob=new Blob([data],{type:"application/json"});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");a.href=url;a.download="dividendtrack_backup_"+todayISO()+".json";a.click();
-  URL.revokeObjectURL(url);toast("✓ Backup descargado");
-}
-function loadBackupFile(e){
-  const file=e.target.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=function(ev){
-    try{
-      const data=JSON.parse(ev.target.result);
-      if(!data.trades&&!data.dividends){toast("⚠ Archivo no reconocido");return;}
-      S=Object.assign(JSON.parse(JSON.stringify(DEF)),data);
-      saveState();renderDashboard();renderPositions();renderTrades();renderRadar();
-      toast("✓ Backup restaurado: "+data.trades?.length+" operaciones, "+data.dividends?.length+" dividendos");
-    }catch(err){toast("⚠ Error al leer el archivo JSON");}
-  };reader.readAsText(file);
-}
-function applyPreloaded(){
-  // Data only — no rendering
-  S=JSON.parse(JSON.stringify(DEF));
-  S.trades=JSON.parse(JSON.stringify(PRELOADED_TRADES));
-  S.dividends=JSON.parse(JSON.stringify(PRELOADED_DIVS));
-  S.posMeta=JSON.parse(JSON.stringify(PRELOADED_META));
-  S.prices=JSON.parse(JSON.stringify(PRELOADED_PRICES));
-  S.fx=JSON.parse(JSON.stringify(PRELOADED_FX));
-  S.cur='EUR';
-  saveState();
-}
-function resetToPreloaded(){
-  if(!confirm("¿Restaurar los datos originales de IB? Se perderán los cambios no guardados en backup."))return;
-  applyPreloaded();
-  // Re-render everything after data is set
-  renderFXStrip();
-  if(S.cur==="USD")setCur("USD"); else setCur("EUR");
-  renderDashboard();
-  renderPositions();
-  renderTrades();
-  renderCalendar();
-  renderRadar();
-  toast("✓ Datos IB originales restaurados");
-}
-function hardReset(){
-  if(!confirm("⚠ BORRAR TODOS LOS DATOS y restaurar los datos IB originales. ¿Continuar?"))return;
-  localStorage.removeItem(SK);
-  applyPreloaded();
-  renderFXStrip();
-  if(S.cur==="USD")setCur("USD"); else setCur("EUR");
-  renderDashboard();
-  renderPositions();
-  renderTrades();
-  renderCalendar();
-  renderRadar();
-  toast("✓ Datos restaurados a IB originales");
-}
-
-// ─── IB IMPORT ───────────────────────────────────────
-let importBuffer=[];
-function handleDrop(e){e.preventDefault();document.getElementById("drop-zone").classList.remove("drag");const f=e.dataTransfer.files[0];if(f)parseIBFile(f);}
-function handleIBFile(e){const f=e.target.files[0];if(f)parseIBFile(f);}
-function parseIBFile(file){
-  const reader=new FileReader();
-  reader.onload=function(e){
-    const lines=e.target.result.split("\n");
-    importBuffer=[];
-    lines.forEach(line=>{
-      const cols=line.split(",").map(c=>c.replace(/^"|"$/g,"").trim());
-      if(cols[0]==="Trades"&&cols[1]==="Data"&&cols[2]==="Order"&&cols[3]==="Stocks"){
-        const currency=cols[4]||"EUR";
-        const ticker=cols[5]||"";
-        const date=(cols[6]||"").split(",")[0].trim().replace(/\//g,"-");
-        const qty=parseFloat(cols[7])||0;
-        const price=parseFloat(cols[8])||0;
-        const fees=Math.abs(parseFloat(cols[11])||0);
-        if(ticker&&price&&qty){
-          importBuffer.push({type:qty>0?"BUY":"SELL",ticker,name:ticker,date:date||todayISO(),shares:Math.abs(qty),price,currency,fee:fees,divAnnual:0,freq:"trimestral",sector:"Otro",dgi:"spec"});
-        }
-      }
-    });
-    if(!importBuffer.length){toast("⚠ No se detectaron operaciones en el CSV");return;}
-    document.getElementById("import-preview-content").innerHTML=`<p style="margin-bottom:10px;color:var(--ink3);font-size:13px">${importBuffer.length} operaciones detectadas</p>`+`<div class="tw"><table class="t"><thead><tr><th>Tipo</th><th>Ticker</th><th>Fecha</th><th class="nr">Acciones</th><th class="nr">Precio</th></tr></thead><tbody>${importBuffer.slice(0,20).map(t=>`<tr><td><span class="b ${t.type==="BUY"?"bg":"br"}">${t.type}</span></td><td><span class="tkr">${t.ticker}</span></td><td style="font-size:11px">${fmtDate(t.date)}</td><td class="nr">${fn(t.shares,2)}</td><td class="nr">${SYM[t.currency]||""}${fn(t.price,2)}</td></tr>`).join("")}${importBuffer.length>20?`<tr><td colspan="5" style="text-align:center;color:var(--ink3);font-size:11px">...y ${importBuffer.length-20} más</td></tr>`:""}</tbody></table></div>`;
-    document.getElementById("import-preview").style.display="block";
-  };reader.readAsText(file);
-}
-function confirmImport(){
-  importBuffer.forEach(t=>{t.id=uid();S.trades.push(t);});
-  saveState();document.getElementById("import-preview").style.display="none";importBuffer=[];
-  renderDashboard();renderPositions();renderTrades();
-  toast("✓ "+importBuffer.length+" operaciones importadas. Actualiza los dividendos con ✎ en Posiciones.");
-}
-
-// ─── INIT ────────────────────────────────────────────
-window.addEventListener('load', function(){
-  // Safety: if Chart.js CDN failed to load, create a stub to prevent crashes
-  if(typeof Chart === 'undefined'){
-    window.Chart = function(){ return {destroy:function(){}}; };
-    console.warn('Chart.js not loaded — charts disabled');
-  }
-  loadState();
-
-  // Load preloaded data if localStorage was empty or stale
-  if(!S.trades || S.trades.length === 0){
-    applyPreloaded();
-  }
-
-  // Init UI
-  renderFXStrip();
-  if(S.cur==="USD") setCur("USD"); else setCur("EUR");
-  renderDashboard();
-});
-
-</script>
-</body>
-</html>
+    if(r.metrics){document.getElementById("rf-pe").value=r.metrics.pe||"";document.getElementById("rf-fcf").
