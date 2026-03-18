@@ -968,13 +968,15 @@ function go(id){
   const names=["dashboard","positions","trades","calendar","projection","radar","charts","import","manual"];
   const idx=names.indexOf(id);
   if(tabs[idx])tabs[idx].classList.add("on");
-  if(id==="dashboard")renderDashboard();
-  if(id==="positions")renderPositions();
-  if(id==="trades")renderTrades();
-  if(id==="calendar")renderCalendar();
-  if(id==="projection")calcProj();
-  if(id==="radar")renderRadar();
-  if(id==="charts")renderCharts();
+  const renders={
+    dashboard:renderDashboard, positions:renderPositions, trades:renderTrades,
+    calendar:renderCalendar, projection:calcProj, radar:renderRadar, charts:renderCharts
+  };
+  if(renders[id]) try{ renders[id](); } catch(e){
+    console.error('render error for '+id+':', e);
+    const p=document.getElementById('p-'+id);
+    if(p&&!p.querySelector('.ei')) p.innerHTML+='<div class="empty"><div class="ei">⚠</div><p style="font-size:12px">Error: '+e.message+'</p></div>';
+  }
   } catch(e){ console.error('go() error:', e); }
 }
 
@@ -1615,6 +1617,7 @@ function calcProj(){
 
 // ─── RENDER RADAR ────────────────────────────────────
 function renderRadar(){
+  if(!document.getElementById('radar-grid'))return;
   const hidden=S.hiddenRadar||[];
   const custom=S.customRadar||[];
   const allR=[...RADAR,...custom];
