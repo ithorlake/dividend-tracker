@@ -795,14 +795,14 @@ const PRELOADED_DIVS = [
 ];
 
 const PRELOADED_META = {
-  'O':{dgi:'dgi',target:60,notes:'Core DGI. Mensual. 133 subidas.'},
-  'ENG':{dgi:'trans',target:18,notes:'Utility española. Revisar política dividendo.'},
-  'FDJU':{dgi:'trans',target:30,notes:'FDJ United. Confirmar dividendo post-fusión.'},
-  'ADBE':{dgi:'spec',target:320,notes:'Especulativa. Sin dividendo. Rotar a DGI.'},
-  'SPR':{dgi:'spec',target:0,notes:'Especulativa en PLN.'},
+  'O':{dgi:'dgi',divAnnual:3.072,freq:'mensual',target:60,notes:'Core DGI. Mensual. 133 subidas consecutivas.'},
+  'ENG':{dgi:'trans',divAnnual:1.0,freq:'semestral',target:18,notes:'Utility española. Enagás. Revisar política dividendo.'},
+  'FDJU':{dgi:'trans',divAnnual:0.9,freq:'semestral',target:30,notes:'FDJ United post-fusión Kindred. Confirmar dividendo 2026.'},
+  'ADBE':{dgi:'spec',divAnnual:0,freq:'trimestral',target:320,notes:'Especulativa. Sin dividendo. Precio medio ~$295. Rotar a DGI cuando tome beneficio.'},
+  'SPR':{dgi:'spec',divAnnual:0,freq:'trimestral',target:0,notes:'Especulativa en PLN. Quedan 1 acción tras vender 7.'},
 };
 
-const PRELOADED_PRICES = {O:64.92,ADBE:251.86,ENG:15.055,FDJU:25.52,SPR:480};
+const PRELOADED_PRICES = {O:64.92,ADBE:251.86,ENG:15.055,FDJU:25.52,SPR:480,SAND:9.67,GIFI:7.80,TUB:3.12,VUSA:100.04,FUSD:11.105};
 const PRELOADED_FX = {USD:0.919,GBP:1.164,PLN:0.234,CAD:0.672};
 
 const RADAR = [
