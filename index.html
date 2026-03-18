@@ -756,8 +756,24 @@ const DEF = {
 };
 let S = JSON.parse(JSON.stringify(DEF));
 const SK = 'dtv6';
-function loadState(){ try{ const d=localStorage.getItem(SK); if(d){ const p=JSON.parse(d); S=Object.assign(JSON.parse(JSON.stringify(DEF)),p); }} catch(e){} }
-function saveState(){ try{ localStorage.setItem(SK,JSON.stringify(S)); } catch(e){} }
+const DATA_VERSION = '20260318_v2'; // bump this to force reset
+function loadState(){
+  try{
+    const d=localStorage.getItem(SK);
+    if(d){
+      const p=JSON.parse(d);
+      if(p._version !== DATA_VERSION){
+        // Wipe stale data, force fresh preloaded
+        localStorage.removeItem(SK);
+        return;
+      }
+      S=Object.assign(JSON.parse(JSON.stringify(DEF)),p);
+    }
+  } catch(e){ localStorage.removeItem(SK); }
+}
+function saveState(){
+  try{ S._version=DATA_VERSION; localStorage.setItem(SK,JSON.stringify(S)); } catch(e){}
+}
 
 // ─── PRELOADED IB DATA ───────────────────────────────
 const PRELOADED_TRADES = [
@@ -1849,20 +1865,32 @@ function loadBackupFile(e){
     }catch(err){toast("⚠ Error al leer el archivo JSON");}
   };reader.readAsText(file);
 }
-function resetToPreloaded(){
-  if(!confirm("¿Restaurar los datos originales de IB? Se perderán los cambios no guardados en backup."))return;
+function applyPreloaded(){
   S=JSON.parse(JSON.stringify(DEF));
-  S.trades=PRELOADED_TRADES;
-  S.dividends=PRELOADED_DIVS;
+  S.trades=JSON.parse(JSON.stringify(PRELOADED_TRADES));
+  S.dividends=JSON.parse(JSON.stringify(PRELOADED_DIVS));
   S.posMeta=JSON.parse(JSON.stringify(PRELOADED_META));
   S.prices=JSON.parse(JSON.stringify(PRELOADED_PRICES));
   S.fx=JSON.parse(JSON.stringify(PRELOADED_FX));
-  saveState();renderDashboard();renderPositions();renderTrades();renderCalendar();renderRadar();
+  saveState();
+  renderFXStrip();
+  renderDashboard();
+  renderPositions();
+  renderTrades();
+  renderCalendar();
+  renderRadar();
+  if(S.cur==="USD")setCur("USD");else setCur("EUR");
+}
+function resetToPreloaded(){
+  if(!confirm("¿Restaurar los datos originales de IB? Se perderán los cambios no guardados en backup."))return;
+  applyPreloaded();
   toast("✓ Datos IB originales restaurados");
 }
 function hardReset(){
-  if(!confirm("⚠ BORRAR TODOS LOS DATOS. Esta acción es irreversible. ¿Continuar?"))return;
-  localStorage.removeItem(SK);location.reload();
+  if(!confirm("⚠ BORRAR TODOS LOS DATOS y restaurar los datos IB originales. ¿Continuar?"))return;
+  localStorage.removeItem(SK);
+  applyPreloaded();
+  toast("✓ Datos restaurados");
 }
 
 // ─── IB IMPORT ───────────────────────────────────────
@@ -1900,28 +1928,4 @@ function confirmImport(){
   toast("✓ "+importBuffer.length+" operaciones importadas. Actualiza los dividendos con ✎ en Posiciones.");
 }
 
-// ─── INIT ────────────────────────────────────────────
-loadState();
-
-// If no trades yet, load preloaded IB data
-if(!S.trades||S.trades.length===0){
-  S.trades=PRELOADED_TRADES;
-  S.dividends=PRELOADED_DIVS;
-  S.posMeta=JSON.parse(JSON.stringify(PRELOADED_META));
-  S.prices=JSON.parse(JSON.stringify(PRELOADED_PRICES));
-  S.fx=JSON.parse(JSON.stringify(PRELOADED_FX));
-  saveState();
-}
-
-// Restore currency toggle UI
-if(S.cur==="USD")setCur("USD");else setCur("EUR");
-
-// Init FX strip
-renderFXStrip();
-
-// Render default tab
-renderDashboard();
-
-</script>
-</body>
-</html>
+// ─── INIT ──────────────────────────────
