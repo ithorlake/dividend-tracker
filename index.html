@@ -1928,4 +1928,24 @@ function confirmImport(){
   toast("✓ "+importBuffer.length+" operaciones importadas. Actualiza los dividendos con ✎ en Posiciones.");
 }
 
-// ─── INIT ──────────────────────────────
+// ─── INIT ────────────────────────────────────────────
+loadState();
+
+// Always apply preloaded if state is missing or version mismatch
+// (version mismatch already cleared localStorage in loadState)
+if(!S.trades || S.trades.length === 0){
+  applyPreloaded();
+}
+
+// Restore currency toggle UI
+if(S.cur==="USD")setCur("USD");else setCur("EUR");
+
+// Init FX strip
+renderFXStrip();
+
+// Render default tab
+renderDashboard();
+
+</script>
+</body>
+</html>
