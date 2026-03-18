@@ -884,7 +884,7 @@ const DEF = {
 };
 let S = JSON.parse(JSON.stringify(DEF));
 const SK = 'dtv6';
-const DATA_VERSION = '20260318_v9'; // bump this to force reset
+const DATA_VERSION = '20260318_v9'; // label only — not used for data wipe // bump this to force reset
 function loadState(){
   try{
     const d=localStorage.getItem(SK);
@@ -2032,5 +2032,4 @@ function openRadarForm(idx){
     document.getElementById("rf-tier").value=r.tier||"B";
     document.getElementById("rf-freq").value=r.freq||"Trimestral";
     document.getElementById("rf-target").value=r.targetPrice||"";
-    document.getElementById("rf-cur").value=r.currency||"$";
-    if(r.metrics){document.getElem
+    document.getElementById("rf-cur").value=r.currency||
