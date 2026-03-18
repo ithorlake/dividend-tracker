@@ -1344,7 +1344,7 @@ function renderPositions(){
     }
   }
 
-  if(!pos.length){document.getElementById("pos-table").innerHTML='<div class="empty"><div class="ei">📈</div><p>Sin posiciones aún. Empieza registrando tu primera compra.</p><button class="btn bp" onclick="openTrade(\'BUY\')">+ Primera compra</button></div>';return;}
+  if(!pos.length){document.getElementById("pos-table").innerHTML=`<div class="empty"><div class="ei">📈</div><p>Sin posiciones aún. Empieza registrando tu primera compra.</p><button class="btn bp" onclick="openTrade('BUY')">+ Primera compra</button></div>`;return;}
 
   // Apply sort
   let sorted=[...pos];
@@ -1410,7 +1410,7 @@ function renderPositions(){
       <td class="nr">€${fn(divYr,2)}${dgStr}</td>
       <td class="nr ${yoc>5?"up":""}">${fn(yoc,2)}%</td>
       <td class="nr">€${fn(divMo,2)}</td>
-      <td><button class="btn bg2 sm" onclick="openEditPos(\'${p.ticker}\')">✎</button></td>
+      <td><button class="btn bg2 sm" onclick="openEditPos('${p.ticker}')">✎</button></td>
     </tr>`;
   }).join("");
 
@@ -1467,7 +1467,7 @@ function renderTrades(){
           <td class="nr">${SYM[t.currency]||""}${fn(t.amount,2)}</td>
           <td class="nr" style="color:var(--accL)">neto ${SYM[t.currency]||""}${fn(net,2)}</td>
           <td class="nr"><span style="font-size:10px;color:var(--ink3)">${t.tax||0}%</span></td>
-          <td><button class="btn bd2 sm" onclick="deleteDividend(\'${t.id}\')">✕</button></td>
+          <td><button class="btn bd2 sm" onclick="deleteDividend('${t.id}')">✕</button></td>
         </tr>`;
       }
       return `<tr>
@@ -1479,7 +1479,7 @@ function renderTrades(){
         <td class="nr">${SYM[t.currency]||""}${fn(t.price,2)}</td>
         <td class="nr">${SYM[t.currency]||""}${fn(t.shares*t.price,2)}</td>
         <td class="nr">${SYM[t.currency]||""}${fn(t.fee||0,2)}</td>
-        <td><button class="btn bd2 sm" onclick="deleteTrade(\'${t.id}\')">✕</button></td>
+        <td><button class="btn bd2 sm" onclick="deleteTrade('${t.id}')">✕</button></td>
       </tr>`;
     }).join("")}</tbody>
   </table></div>`;
