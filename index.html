@@ -884,7 +884,7 @@ const DEF = {
 };
 let S = JSON.parse(JSON.stringify(DEF));
 const SK = 'dtv6';
-const DATA_VERSION = '20260318_v8'; // bump this to force reset
+const DATA_VERSION = '20260318_v9'; // bump this to force reset
 function loadState(){
   try{
     const d=localStorage.getItem(SK);
@@ -1204,6 +1204,7 @@ function calcRealisedPnL(){
 
 // ─── RENDER DASHBOARD ────────────────────────────────
 function renderDashboard(){
+  try{
   const pos=getPositions();
   const realisedPnL=calcRealisedPnL();
   // Totals
@@ -1248,7 +1249,7 @@ function renderDashboard(){
   const gbpEl=document.getElementById("k-cgbp");
   if(gbpCard&&gbpEl){
     const gbpVal=S.cash.GBP||0;
-    gbpCard.style.display=gbpVal>0?"":"none";
+    gbpCard.style.display=gbpVal>0?"flex":"none";
     gbpEl.textContent="£"+fn(gbpVal,2);
   }
 
@@ -1337,6 +1338,7 @@ function renderDashboard(){
 
   // NAV snapshot
   saveNavSnapshot(nav);
+  } catch(err){ console.error('renderDashboard error:',err); }
 }
 
 function renderOportunidades(){
@@ -2031,4 +2033,4 @@ function openRadarForm(idx){
     document.getElementById("rf-freq").value=r.freq||"Trimestral";
     document.getElementById("rf-target").value=r.targetPrice||"";
     document.getElementById("rf-cur").value=r.currency||"$";
-    if(r.metrics){document.getElementById("rf-pe").value=r.metrics.pe||"";document.getElementById("rf-fcf").
+    if(r.metrics){document.getElem
