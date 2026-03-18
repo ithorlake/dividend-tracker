@@ -788,6 +788,16 @@ table.t tr:hover td{background:var(--bg3)}
   </div>
 </div>
 <script>
+// ─── ERROR CAPTURE ───────────────────────────────────
+window.onerror = function(msg, src, line, col, err){
+  var d = document.getElementById('debug-overlay');
+  if(!d){ d = document.createElement('div'); d.id='debug-overlay';
+    d.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#1a0000;color:#ff6666;padding:12px 16px;font-family:monospace;font-size:12px;z-index:9999;max-height:200px;overflow-y:auto;border-top:2px solid #ff0000';
+    document.body.appendChild(d);
+  }
+  d.innerHTML += '<div>❌ LINE '+line+': '+msg+'</div>';
+  return false;
+};
 // ─── STATE ───────────────────────────────────────────
 const DEF = {
   trades:[], dividends:[],
@@ -802,23 +812,38 @@ let S = JSON.parse(JSON.stringify(DEF));
 const SK = 'dtv6';
 const DATA_VERSION = '20260318_v9'; // label only — not used for data wipe // bump this to force reset
 function loadState(){
+  // Step 1: always start with preloaded IB data
+  applyPreloaded();
+
+  // Step 2: overlay user changes from localStorage if valid
   try{
-    const d=localStorage.getItem(SK);
-    if(!d) return;
-    const p=JSON.parse(d);
-    // Version mismatch → wipe and reload fresh
-    if(p._version !== DATA_VERSION){
-      localStorage.removeItem(SK);
-      return;
-    }
-    // Extra sanity check: if ADBE price > $400 in trades, data is corrupt
-    const adbe=p.trades&&p.trades.find(t=>t.ticker==='ADBE'&&t.type==='BUY');
-    if(adbe && adbe.price > 400){
-      localStorage.removeItem(SK);
-      return;
-    }
-    S=Object.assign(JSON.parse(JSON.stringify(DEF)),p);
-  } catch(e){ localStorage.removeItem(SK); }
+    const d = localStorage.getItem(SK);
+    if(!d) return; // no saved data, preloaded is fine
+
+    const p = JSON.parse(d);
+
+    // Only use saved data if user has added their own trades
+    if(p.trades && p.trades.length > PRELOADED_TRADES.length) S.trades = p.trades;
+    if(p.dividends && p.dividends.length > PRELOADED_DIVS.length) S.dividends = p.dividends;
+
+    // Always restore user preferences
+    if(p.cur)          S.cur = p.cur;
+    if(p.fx)           S.fx = p.fx;
+    if(p.fxDate)       S.fxDate = p.fxDate;
+    if(p.cash)         S.cash = p.cash;
+    if(p.prices && Object.keys(p.prices).length) S.prices = p.prices;
+    if(p.priceDates)   S.priceDates = p.priceDates;
+    if(p.goal)         S.goal = p.goal;
+    if(p.posMeta)      S.posMeta = p.posMeta;
+    if(p.hiddenRadar)  S.hiddenRadar = p.hiddenRadar;
+    if(p.customRadar)  S.customRadar = p.customRadar;
+    if(p.navHistory)   S.navHistory = p.navHistory;
+    if(p.secMetrics)   S.secMetrics = p.secMetrics;
+    if(p.radarOverrides) S.radarOverrides = p.radarOverrides;
+  } catch(e){
+    // localStorage corrupt — preloaded data already applied above
+    localStorage.removeItem(SK);
+  }
 }
 function saveState(){
   try{ S._version=DATA_VERSION; localStorage.setItem(SK,JSON.stringify(S)); } catch(e){}
@@ -1320,120 +1345,142 @@ function sc(col){
 
 // ─── RENDER POSITIONS ────────────────────────────────
 function renderPositions(){
-  const pos=getPositions();
-  const firstDiv=getFirstDivByTicker();
-  const realisedPnL=calcRealisedPnL();
-  const totalVal=pos.reduce((s,p)=>{const cp=S.prices[p.ticker]||(p.costTotal/Math.max(p.shares,0.0001));return s+toEur(p.shares*cp,p.currency);},0);
+  const el = document.getElementById('pos-table');
+  if(!el) return;
+
+  const pos = getPositions();
+  const firstDiv = getFirstDivByTicker();
+  const totalVal = pos.reduce(function(s,p){
+    const cp = S.prices[p.ticker] || (p.costTotal / Math.max(p.shares, 0.0001));
+    return s + toEur(p.shares * cp, p.currency);
+  }, 0);
 
   // Banners
-  const staleBanner=document.getElementById("pos-stale-banner");
-  const staleMsg=document.getElementById("pos-stale-msg");
+  const staleBanner = document.getElementById('pos-stale-banner');
+  const concBanner  = document.getElementById('pos-conc-banner');
   if(staleBanner){
-    const stale=pos.filter(p=>staleness(p.ticker,p.currency)==="old"||staleness(p.ticker,p.currency)==="never");
-    staleBanner.style.display=stale.length?"flex":"none";
-    if(staleMsg&&stale.length)staleMsg.textContent="⚠ Precios desactualizados: "+stale.map(p=>p.ticker).join(", ")+". P&L puede no ser preciso.";
+    const stale = pos.filter(function(p){ const s=staleness(p.ticker,p.currency); return s==='old'||s==='never'; });
+    staleBanner.style.display = stale.length ? 'flex' : 'none';
+    const sm = document.getElementById('pos-stale-msg');
+    if(sm && stale.length) sm.textContent = '⚠ Precios desactualizados: ' + stale.map(function(p){return p.ticker;}).join(', ');
   }
-  const concBanner=document.getElementById("pos-conc-banner");
-  const concMsg=document.getElementById("pos-conc-msg");
-  if(concBanner&&totalVal>0){
-    const over=pos.filter(p=>{const cp=S.prices[p.ticker]||(p.costTotal/Math.max(p.shares,0.0001));return toEur(p.shares*cp,p.currency)/totalVal*100>5;});
-    concBanner.style.display=over.length?"flex":"none";
-    if(concMsg&&over.length){
-      const det=over.map(p=>{const cp=S.prices[p.ticker]||(p.costTotal/Math.max(p.shares,0.0001));const w=(toEur(p.shares*cp,p.currency)/totalVal*100).toFixed(1);return p.ticker+" ("+w+"%)";});
-      concMsg.textContent="⚠ Posiciones >5% del portfolio: "+det.join(", ")+". Considera diversificar.";
+  if(concBanner && totalVal > 0){
+    const over = pos.filter(function(p){
+      const cp = S.prices[p.ticker] || (p.costTotal / Math.max(p.shares, 0.0001));
+      return toEur(p.shares * cp, p.currency) / totalVal * 100 > 5;
+    });
+    concBanner.style.display = over.length ? 'flex' : 'none';
+    const cm = document.getElementById('pos-conc-msg');
+    if(cm && over.length){
+      const det = over.map(function(p){
+        const cp = S.prices[p.ticker] || (p.costTotal / Math.max(p.shares, 0.0001));
+        return p.ticker + ' (' + fn(toEur(p.shares*cp,p.currency)/totalVal*100,1) + '%)';
+      });
+      cm.textContent = '⚠ Posiciones >5%: ' + det.join(', ');
     }
   }
 
-  if(!pos.length){document.getElementById("pos-table").innerHTML=`<div class="empty"><div class="ei">📈</div><p>Sin posiciones aún. Empieza registrando tu primera compra.</p><button class="btn bp" onclick="openTrade('BUY')">+ Primera compra</button></div>`;return;}
+  if(!pos.length){
+    el.innerHTML = '<div class="empty"><div class="ei">📈</div><p>Sin posiciones aún.</p></div>';
+    return;
+  }
 
-  // Apply sort
-  let sorted=[...pos];
-  if(activeSortCol&&activeSortDir!==0){
-    sorted.sort((a,b)=>{
-      const cpA=S.prices[a.ticker]||(a.costTotal/Math.max(a.shares,0.0001));
-      const cpB=S.prices[b.ticker]||(b.costTotal/Math.max(b.shares,0.0001));
-      const valA=toEur(a.shares*cpA,a.currency);
-      const valB=toEur(b.shares*cpB,b.currency);
-      const cA=toEur(a.costTotal+a.fees,a.currency);
-      const cB=toEur(b.costTotal+b.fees,b.currency);
-      const dA=toEur(a.shares*a.divAnnual,a.currency);
-      const dB=toEur(b.shares*b.divAnnual,b.currency);
-      const wA=totalVal>0?valA/totalVal*100:0;
-      const wB=totalVal>0?valB/totalVal*100:0;
-      let va,vb;
-      switch(activeSortCol){
-        case"ticker":va=a.ticker;vb=b.ticker;break;
-        case"sector":va=a.sector;vb=b.sector;break;
-        case"weight":va=wA;vb=wB;break;
-        case"shares":va=a.shares;vb=b.shares;break;
-        case"pnl":va=valA-cA;vb=valB-cB;break;
-        case"divyr":va=dA;vb=dB;break;
-        case"yoc":va=cA>0?dA/cA:0;vb=cB>0?dB/cB:0;break;
-        case"divmo":va=dA/12;vb=dB/12;break;
-        default:va=0;vb=0;
-      }
-      if(typeof va==="string")return activeSortDir*va.localeCompare(vb);
-      return activeSortDir*(va-vb);
+  // Sort
+  let sorted = pos.slice();
+  if(activeSortCol && activeSortDir !== 0){
+    sorted.sort(function(a,b){
+      const cpA = S.prices[a.ticker]||(a.costTotal/Math.max(a.shares,0.0001));
+      const cpB = S.prices[b.ticker]||(b.costTotal/Math.max(b.shares,0.0001));
+      const vA = toEur(a.shares*cpA,a.currency), vB = toEur(b.shares*cpB,b.currency);
+      const cA = toEur(a.costTotal+a.fees,a.currency), cB = toEur(b.costTotal+b.fees,b.currency);
+      const dA = toEur(a.shares*a.divAnnual,a.currency), dB = toEur(b.shares*b.divAnnual,b.currency);
+      const wA = totalVal>0?vA/totalVal*100:0, wB = totalVal>0?vB/totalVal*100:0;
+      var va, vb;
+      if(activeSortCol==='ticker'){va=a.ticker;vb=b.ticker;}
+      else if(activeSortCol==='sector'){va=a.sector;vb=b.sector;}
+      else if(activeSortCol==='weight'){va=wA;vb=wB;}
+      else if(activeSortCol==='shares'){va=a.shares;vb=b.shares;}
+      else if(activeSortCol==='pnl'){va=vA-cA;vb=vB-cB;}
+      else if(activeSortCol==='divyr'){va=dA;vb=dB;}
+      else if(activeSortCol==='yoc'){va=cA>0?dA/cA:0;vb=cB>0?dB/cB:0;}
+      else if(activeSortCol==='divmo'){va=dA/12;vb=dB/12;}
+      else{va=0;vb=0;}
+      if(typeof va==='string') return activeSortDir * va.localeCompare(vb);
+      return activeSortDir * (va - vb);
     });
   }
 
+  // Build thead
+  function th(label, col){
+    var icon = '';
+    if(activeSortCol===col) icon = activeSortDir===1 ? ' ▲' : ' ▼';
+    else icon = ' ⇅';
+    var cls = col ? 'sort' : '';
+    var onclick = col ? (' onclick="sc(\'' + col + '\')"') : '';
+    return '<th class="'+cls+(col?' nr':'')+'"'+onclick+'>'+label+'<span style="opacity:.3;font-size:9px">'+icon+'</span></th>';
+  }
 
+  var thead = '<thead><tr>' +
+    '<th>Ticker</th><th>Empresa</th>' +
+    th('Sector','sector') + th('Peso%','weight') + th('Accs','shares') +
+    '<th class="nr">P.medio</th><th class="nr">P.actual</th>' +
+    th('P&amp;L€','pnl') + th('Div.a€','divyr') +
+    th('YoC','yoc') + th('Div/m','divmo') + '<th></th>' +
+    '</tr></thead>';
 
-  const dgiMap={dgi:["DGI","bg"],trans:["TRANS.","bo"],spec:["ESPEC.","br"]};
-  const rows=sorted.map(p=>{
-    const cp=S.prices[p.ticker]||(p.costTotal/Math.max(p.shares,0.0001));
-    const valEur=toEur(p.shares*cp,p.currency);
-    const costEur=toEur(p.costTotal+p.fees,p.currency);
-    const pnl=valEur-costEur;
-    const divYr=toEur(p.shares*p.divAnnual,p.currency);
-    const divMo=divYr/12;
-    const yoc=costEur>0?divYr/costEur*100:0;
-    const wPct=totalVal>0?valEur/totalVal*100:0;
-    const wCol=wPct>10?"var(--redL)":wPct>5?"var(--goldL)":"var(--greenL)";
-    const [dlbl,dcls]=dgiMap[p.dgi]||["ESPEC.","br"];
-    const stale=staleness(p.ticker,p.currency);
-    const staleIcon=stale==="auto"?'<span title="Precio auto Yahoo" style="font-size:9px;color:var(--accL);margin-left:3px">&#x27F3;</span>':stale==="fresh"?'<span title="Manual reciente" style="font-size:9px;color:var(--goldL);margin-left:3px">&#9998;</span>':stale==="old"?'<span title="Desactualizado >7d" style="font-size:9px;color:var(--redL);margin-left:3px;animation:pulse 2s infinite;display:inline-block">&#9888;</span>':'<span title="Sin precio" style="font-size:9px;color:var(--ink3);margin-left:3px">?</span>';
-    const fDiv=firstDiv[p.ticker]||0;
-    const dgPct=fDiv>0?(p.divAnnual-fDiv)/fDiv*100:0;
-    const dgCls=dgPct>=0?"up":"dn";
-    const dgArrow=dgPct>=0?"&#9650;":"&#9660;";
-    const dgStr=fDiv>0?`<span class="${dgCls}" style="font-size:9px;margin-left:3px">${dgArrow}${Math.abs(dgPct).toFixed(1)}%</span>`:"";
-    return `<tr>
-      <td><span class="tkr">${p.ticker}</span><div style="margin-top:2px"><span class="b ${dcls}">${dlbl}</span></div></td>
-      <td><div style="font-size:12px">${p.name}</div></td>
-      <td><span class="b bx" style="font-size:10px">${p.sector||"—"}</span></td>
-      <td class="nr"><span style="font-family:var(--mono);font-weight:600;color:${wCol};font-size:12px">${fn(wPct,1)}%</span><div style="height:3px;background:var(--bg4);border-radius:2px;margin-top:3px;width:52px;margin-left:auto"><div style="width:${Math.min(100,wPct*10)}%;height:100%;background:${wCol};border-radius:2px"></div></div></td>
-      <td class="nr">${fn(p.shares,p.shares%1===0?0:4)}</td>
-      <td class="nr">${SYM[p.currency]||""}${fn(p.costTotal/Math.max(p.shares,0.0001),2)}</td>
-      <td class="nr">${SYM[p.currency]||""}${fn(cp,2)}${staleIcon}</td>
-      <td class="nr ${pnl>=0?"up":"dn"}">${pnl>=0?"+":""}€${Math.round(pnl).toLocaleString("es-ES")}</td>
-      <td class="nr">€${fn(divYr,2)}${dgStr}</td>
-      <td class="nr ${yoc>5?"up":""}">${fn(yoc,2)}%</td>
-      <td class="nr">€${fn(divMo,2)}</td>
-      <td><button class="btn bg2 sm" onclick="openEditPos('${p.ticker}')">✎</button></td>
-    </tr>`;
-  }).join("");
+  var dgiMap = {dgi:['DGI','bg'], trans:['TRANS.','bo'], spec:['ESPEC.','br']};
+  var staleIcons = {
+    auto: '<span title="Auto Yahoo" style="font-size:9px;color:var(--accL)"> ⟳</span>',
+    fresh:'<span title="Manual reciente" style="font-size:9px;color:var(--goldL)"> ✎</span>',
+    old:  '<span title="Desactualizado" style="font-size:9px;color:var(--redL)"> ⚠</span>',
+    never:'<span title="Sin precio" style="font-size:9px;color:var(--ink3)"> ?</span>'
+  };
 
-  document.getElementById("pos-table").innerHTML=`<div class="tw"><table class="t">
-    <thead><tr>
-      <th class="sort" onclick="sc('ticker')">Ticker${si("ticker")}</th>
-      <th>Empresa</th>
-      <th class="sort" onclick="sc('sector')">Sector${si("sector")}</th>
-      <th class="sort nr" onclick="sc('weight')">Peso%${si("weight")}</th>
-      <th class="sort nr" onclick="sc('shares')">Acciones${si("shares")}</th>
-      <th class="nr">P.medio</th>
-      <th class="nr">P.actual</th>
-      <th class="sort nr" onclick="sc('pnl')">P&amp;L&#8364;${si("pnl")}</th>
-      <th class="sort nr" onclick="sc('divyr')">Div.anual&#8364;${si("divyr")}</th>
-      <th class="sort nr" onclick="sc('yoc')">Yield/coste${si("yoc")}</th>
-      <th class="sort nr" onclick="sc('divmo')">Div.mensual${si("divmo")}</th>
-      <th></th>
-    </tr></thead>
-    <tbody>${rows}</tbody>
-  </table></div>`;
+  var rows = '';
+  for(var i=0; i<sorted.length; i++){
+    var p = sorted[i];
+    var cp = S.prices[p.ticker] || (p.costTotal / Math.max(p.shares, 0.0001));
+    var valEur = toEur(p.shares * cp, p.currency);
+    var costEur = toEur(p.costTotal + p.fees, p.currency);
+    var pnl = valEur - costEur;
+    var divYr = toEur(p.shares * p.divAnnual, p.currency);
+    var yoc = costEur > 0 ? divYr / costEur * 100 : 0;
+    var wPct = totalVal > 0 ? valEur / totalVal * 100 : 0;
+    var wCol = wPct>10 ? 'var(--redL)' : wPct>5 ? 'var(--goldL)' : 'var(--greenL)';
+    var dgi = dgiMap[p.dgi] || ['ESPEC.','br'];
+    var st = staleness(p.ticker, p.currency);
+    var si = staleIcons[st] || staleIcons.never;
+    var fDiv = firstDiv[p.ticker] || 0;
+    var dgPct = fDiv > 0 ? (p.divAnnual - fDiv) / fDiv * 100 : 0;
+    var dgStr = fDiv > 0 ? '<span class="'+(dgPct>=0?'up':'dn')+'" style="font-size:9px"> '+(dgPct>=0?'▲':'▼')+fn(Math.abs(dgPct),1)+'%</span>' : '';
+    var sym = SYM[p.currency] || '';
+    var avgP = fn(p.costTotal / Math.max(p.shares, 0.0001), 2);
+    var shares = fn(p.shares, p.shares % 1 === 0 ? 0 : 4);
+    var pnlCls = pnl >= 0 ? 'up' : 'dn';
+    var pnlStr = (pnl>=0?'+':'') + '€' + Math.round(pnl).toLocaleString('es-ES');
+
+    rows += '<tr>';
+    rows += '<td><span class="tkr">'+p.ticker+'</span><div style="margin-top:2px"><span class="b '+dgi[1]+'">'+dgi[0]+'</span></div></td>';
+    rows += '<td style="font-size:12px">'+p.name+'</td>';
+    rows += '<td><span class="b bx" style="font-size:10px">'+(p.sector||'—')+'</span></td>';
+    rows += '<td class="nr"><span style="font-family:var(--mono);font-weight:600;color:'+wCol+';font-size:12px">'+fn(wPct,1)+'%</span>';
+    rows += '<div style="height:3px;background:var(--bg4);border-radius:2px;margin-top:3px;width:52px;margin-left:auto">';
+    rows += '<div style="width:'+Math.min(100,wPct*10)+'%;height:100%;background:'+wCol+';border-radius:2px"></div></div></td>';
+    rows += '<td class="nr">'+shares+'</td>';
+    rows += '<td class="nr">'+sym+avgP+'</td>';
+    rows += '<td class="nr">'+sym+fn(cp,2)+si+'</td>';
+    rows += '<td class="nr '+pnlCls+'">'+pnlStr+'</td>';
+    rows += '<td class="nr">€'+fn(divYr,2)+dgStr+'</td>';
+    rows += '<td class="nr '+(yoc>5?'up':'')+'">'+fn(yoc,2)+'%</td>';
+    rows += '<td class="nr">€'+fn(divYr/12,2)+'</td>';
+    rows += '<td><button class="btn bg2 sm" onclick="openEditPos(\'' + p.ticker + '\')">✎</button></td>';
+    rows += '</tr>';
+  }
+
+  el.innerHTML = '<div class="tw"><table class="t">'+thead+'<tbody>'+rows+'</tbody></table></div>';
 }
 
-// ─── RENDER TRADES ───────────────────────────────────
+
 let activeTradeFilter='all';
 function setTradeFilter(f,btn){
   activeTradeFilter=f;
